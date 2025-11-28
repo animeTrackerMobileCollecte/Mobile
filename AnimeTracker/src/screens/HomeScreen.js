@@ -87,7 +87,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>AnimeHub</Text>
+        <Text style={styles.headerTitle}>AnimeTracker</Text>
         <TouchableOpacity style={styles.iconBtn}>
            <Ionicons name="notifications" size={20} color="#333" />
         </TouchableOpacity>
