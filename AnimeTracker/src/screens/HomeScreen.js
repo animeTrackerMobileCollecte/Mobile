@@ -1,283 +1,168 @@
-import React from 'react';
-import { View, Text, TextInput, Image, ScrollView, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, FlatList,Alert } from 'react-native';
+import SwipeableAnimeCard from '../components/SwipeableAnimeCard'; // NOUVEL IMPORT
 import { Ionicons } from '@expo/vector-icons';
 
-// 1. Les données exactes de votre capture d'écran
-const DATA = [
-  {
-    id: '1',
-    title: 'Attack on Titan',
-    rating: 5.0,
-    episodes: 'Ep 15/24',
-    image: 'https://cdn.myanimelist.net/images/anime/10/47347.jpg',
-    isFavorite: true,
-  },
-  {
-    id: '2',
-    title: 'Demon Slayer',
-    rating: 4.2,
-    episodes: 'Ep 8/12',
-    image: 'https://cdn.myanimelist.net/images/anime/1286/99889.jpg',
-    isFavorite: false,
-  },
-  {
-    id: '3',
-    title: 'One Piece',
-    rating: 4.9,
-    episodes: 'Ep 1024/--',
-    image: 'https://cdn.myanimelist.net/images/anime/6/73245.jpg',
-    isFavorite: true,
-  },
-  {
-    id: '4',
-    title: 'Jujutsu Kaisen',
-    rating: 4.8,
-    episodes: 'Ep 3/24',
-    image: 'https://cdn.myanimelist.net/images/anime/1171/109222.jpg',
-    isFavorite: false,
-  },
-];
+// Import des dépendances internes
+import { globalStyles, COLORS } from '../constants/styles';
+import AnimeCard from '../components/AnimeCard';
+import { MOCK_DATA_INITIAL } from '../data/mockData';
+
+// Liste des onglets : DOIT correspondre aux champs de statut dans mockData
+const TABS = ['Ongoing', 'Wishlist', 'Completed'];
+
+// --- Composants Structurels (utilisent les styles externes) ---
+
+const Header = () => (
+  <View style={globalStyles.header}>
+    <Text style={globalStyles.headerTitle}>AnimeTracker</Text>
+    <TouchableOpacity style={globalStyles.iconBtn}>
+      <Ionicons name="notifications" size={20} color={COLORS.darkText} />
+    </TouchableOpacity>
+  </View>
+);
+
+const SearchBar = () => (
+  <View style={globalStyles.searchContainer}>
+    <Ionicons name="search" size={20} color={COLORS.lightText} style={{ marginRight: 10 }} />
+    <TextInput placeholder="Search anime" style={globalStyles.searchInput} />
+  </View>
+);
+
+// Composant des Onglets
+const Tabs = ({ activeTab, setActiveTab }) => (
+  <View style={globalStyles.tabsContainer}>
+    {TABS.map((tabName) => (
+      <TouchableOpacity
+        key={tabName}
+        style={[
+          globalStyles.tabButton,
+          activeTab === tabName ? globalStyles.activeTab : null,
+        ]}
+        onPress={() => setActiveTab(tabName)}
+      >
+        <Text
+          style={activeTab === tabName ? globalStyles.activeTabText : globalStyles.inactiveTabText}
+        >
+          {tabName}
+        </Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+);
+
+const StatsCards = ({ watchingCount, completedCount }) => (
+  <View style={globalStyles.statsContainer}>
+    <View style={[globalStyles.statCard, { backgroundColor: COLORS.primary }]}>
+      <Text style={globalStyles.statNumber}>{watchingCount}</Text>
+      <Text style={globalStyles.statLabel}>Watching</Text>
+    </View>
+    <View style={[globalStyles.statCard, { backgroundColor: COLORS.secondary }]}>
+      <Text style={globalStyles.statNumber}>{completedCount}</Text>
+      <Text style={globalStyles.statLabel}>Completed</Text>
+    </View>
+  </View>
+);
+
+// --- Écran Principal avec Logique ---
 
 export default function HomeScreen() {
   
-  // Fonction pour afficher les étoiles
-  const renderStars = (rating) => {
-    return (
-      <View style={{ flexDirection: 'row' }}>
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Ionicons 
-            key={star} 
-            name={star <= Math.round(rating) ? "star" : "star-outline"} 
-            size={14} 
-            color="#FFD700" 
-          />
-        ))}
-        <Text style={{ marginLeft: 5, fontSize: 12, color: '#666', fontWeight: 'bold' }}>{rating}</Text>
-      </View>
+  // 1. Initialisation des états
+  const [activeTab, setActiveTab] = useState(TABS[0]); // Onglet actif
+  const [animeData, setAnimeData] = useState(MOCK_DATA_INITIAL); // Liste d'animés modifiable
+
+  // 2. Fonction pour ajouter/retirer des favoris (Heart Button)
+  const handleToggleFavorite = (id) => {
+    // La fonction map() crée un nouveau tableau avec l'objet ciblé mis à jour
+    const updatedData = animeData.map(anime => 
+      anime.id === id 
+        ? { ...anime, isFavorite: !anime.isFavorite } // Inverse la valeur isFavorite
+        : anime 
     );
+    
+    // Met à jour l'état et force la liste à se redessiner
+    setAnimeData(updatedData);
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.cardImage} />
-      
-      <View style={styles.cardContent}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.animeTitle}>{item.title}</Text>
-          <Ionicons 
-            name={item.isFavorite ? "heart" : "heart-outline"} 
-            size={20} 
-            color={item.isFavorite ? "#E50914" : "#aaa"} 
-          />
-        </View>
-        
-        {renderStars(item.rating)}
+  // 3. Fonction pour ajouter à la Wishlist (Swipe-to-action)
+  const handleAddToWishlist = (id) => {
+    const animeToAdd = animeData.find(anime => anime.id === id);
 
-        <View style={styles.cardFooter}>
-          <View style={styles.tagContainer}>
-            <Text style={styles.tagText}>Ongoing</Text>
-          </View>
-          <Text style={styles.episodeText}>{item.episodes}</Text>
-        </View>
-      </View>
-    </View>
-  );
+    if (animeToAdd && !animeToAdd.isInWishlist) {
+      const updatedData = animeData.map(anime =>
+        anime.id === id ? { ...anime, status: 'watchlist', isInWishlist: true } : anime
+      );
+      setAnimeData(updatedData);
+      Alert.alert("Succès", `${animeToAdd.title} a été ajouté à votre Wishlist !`); // Pop-up simple
+    } else if (animeToAdd && animeToAdd.isInWishlist) {
+        Alert.alert("Info", `${animeToAdd.title} est déjà dans votre Wishlist.`);
+    }
+  };
+
+ // 4. Logique de filtrage des animés
+  const filteredAnime = animeData.filter((anime) => {
+    if (activeTab === 'Favorites') {
+        return anime.isFavorite === true;
+    }
+    if (activeTab === 'Wishlist') { // Nouveau filtre pour la wishlist
+        return anime.status === 'watchlist' && anime.isInWishlist === true;
+    }
+    
+    const targetStatus = activeTab.toLowerCase();
+    return anime.status === targetStatus;
+  });
+
+  const watchingCount = animeData.filter(
+      (anime) => anime.status === 'ongoing'
+  ).length;
+
+  // Compte des animés terminés (Completed)
+  const completedCount = animeData.filter(
+      (anime) => anime.status === 'completed'
+  ).length;
 
   return (
-    <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>AnimeTracker</Text>
-        <TouchableOpacity style={styles.iconBtn}>
-           <Ionicons name="notifications" size={20} color="#333" />
-        </TouchableOpacity>
-      </View>
+    <View style={globalStyles.container}>
+      
+      <Header />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* SEARCH BAR */}
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#999" style={{ marginRight: 10 }} />
-          <TextInput placeholder="Search anime..." style={styles.searchInput} />
-        </View>
+        
+        <SearchBar />
+        
+        {/* Composant Tabs qui met à jour l'état */}
+        <Tabs activeTab={activeTab} setActiveTab={setActiveTab} /> 
+        
+        {activeTab === 'Ongoing' && (
+          <StatsCards 
+              watchingCount={watchingCount} 
+              completedCount={completedCount} 
+          />
+        )}
 
-        {/* TABS BUTTONS */}
-        <View style={styles.tabsContainer}>
-          <TouchableOpacity style={[styles.tabButton, styles.activeTab]}>
-            <Text style={styles.activeTabText}>Ongoing</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tabButton}>
-            <Text style={styles.inactiveTabText}>Favorites</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tabButton}>
-            <Text style={styles.inactiveTabText}>Wishlist</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.tabButton}>
-            <Text style={styles.inactiveTabText}>Completed</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* STATS CARDS */}
-        <View style={styles.statsContainer}>
-          <View style={[styles.statCard, { backgroundColor: '#3b82f6' }]}>
-            <Text style={styles.statNumber}>24</Text>
-            <Text style={styles.statLabel}>Watching</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: '#22c55e' }]}>
-            <Text style={styles.statNumber}>156</Text>
-            <Text style={styles.statLabel}>Completed</Text>
-          </View>
-        </View>
-
-        {/* LISTE DES ANIMES */}
+{/* Utilisation du NOUVEAU composant SwipeableAnimeCard */}
         <FlatList
-          data={DATA}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-          scrollEnabled={false} // On laisse le ScrollView global gérer le scroll
+          data={filteredAnime} 
+          renderItem={({ item }) => (
+            <SwipeableAnimeCard 
+              item={item} 
+              onToggleFavorite={handleToggleFavorite} 
+              onAddToWishlist={handleAddToWishlist} // Passé pour le swipe
+            />
+          )}
+          keyExtractor={item => item.id.toString()}
+          scrollEnabled={false}
+          ListEmptyComponent={() => (
+            <Text style={{ textAlign: 'center', marginTop: 50, color: COLORS.lightText }}>
+              Aucun animé dans votre liste {activeTab}.
+            </Text>
+          )}
         />
         
-        {/* Espace vide en bas pour ne pas être caché par le menu */}
+        {/* Espace vide pour le menu du bas */}
         <View style={{ height: 80 }} /> 
       </ScrollView>
     </View>
   );
 }
-
-// STYLES IDENTIQUES À L'IMAGE
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: 50, // Pour éviter l'encoche du téléphone
-    paddingHorizontal: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  iconBtn: {
-    padding: 8,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 50,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    marginBottom: 20,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  tabButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  activeTab: {
-    backgroundColor: '#3b82f6', // Bleu
-  },
-  activeTabText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  inactiveTabText: {
-    color: '#888',
-    fontSize: 13,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  statCard: {
-    width: '48%',
-    padding: 20,
-    borderRadius: 16,
-    justifyContent: 'center',
-  },
-  statNumber: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  statLabel: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.9)',
-    marginTop: 5,
-  },
-  card: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 10,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
-    // Ombres légères
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  cardImage: {
-    width: 80,
-    height: 100,
-    borderRadius: 12,
-  },
-  cardContent: {
-    flex: 1,
-    marginLeft: 15,
-    justifyContent: 'space-around',
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  animeTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    flex: 1, // Pour que le texte ne passe pas par dessus le cœur
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 5,
-  },
-  tagContainer: {
-    backgroundColor: '#e0f2fe', // Bleu très clair
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  tagText: {
-    color: '#3b82f6',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  episodeText: {
-    fontSize: 12,
-    color: '#888',
-  }
-});

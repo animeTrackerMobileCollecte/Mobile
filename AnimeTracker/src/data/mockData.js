@@ -1,31 +1,52 @@
-// src/data/mockData.js
-export const MOCK_ANIMES = [
-    {
-      id: 1,
-      title: "Jujutsu Kaisen",
-      image: "https://cdn.myanimelist.net/images/anime/1171/109222.jpg",
-      score: 8.7,
-      status: "En cours"
-    },
-    {
-      id: 2,
-      title: "Attack on Titan",
-      image: "https://cdn.myanimelist.net/images/anime/10/47347.jpg",
-      score: 9.0,
-      status: "Terminé"
-    },
-    {
-      id: 3,
-      title: "One Piece",
-      image: "https://cdn.myanimelist.net/images/anime/6/73245.jpg",
-      score: 9.8,
-      status: "Favoris"
-    },
-    {
-      id: 4,
-      title: "Demon Slayer",
-      image: "https://cdn.myanimelist.net/images/anime/1286/99889.jpg",
-      score: 8.9,
-      status: "Watchlist"
-    }
-  ];
+export const MOCK_DATA_INITIAL = [
+  {
+    id: 1,
+    title: "Jujutsu Kaisen",
+    image: "https://cdn.myanimelist.net/images/anime/1171/109222.jpg",
+    rating: 4.8,
+    status: "ongoing",
+    isFavorite: true,
+    isInWishlist: false,
+    episodes: "Ep 20/24",
+  },
+  {
+    id: 2,
+    title: "Attack on Titan",
+    image: "https://cdn.myanimelist.net/images/anime/10/47347.jpg",
+    rating: 5.0,
+    status: "completed",
+    isFavorite: false,
+    isInWishlist: false,
+    episodes: "Ep 24/24",
+  },
+  {
+    id: 3,
+    title: "Demon Slayer",
+    image: "https://cdn.myanimelist.net/images/anime/1286/99889.jpg",
+    rating: 4.2,
+    status: "ongoing",
+    isFavorite: true,
+    isInWishlist: false,
+    episodes: "Ep 8/12",
+  },
+  {
+    id: 4,
+    title: "One Piece",
+    image: "https://cdn.myanimelist.net/images/anime/6/73245.jpg",
+    rating: 4.9,
+    status: "ongoing",
+    isInWishlist: false,
+    isFavorite: true,
+    episodes: "Ep 1024/--",
+  },
+  {
+    id: 5,
+    title: "My Hero Academia",
+    image: "https://cdn.myanimelist.net/images/anime/10/78745.jpg",
+    rating: 4.5,
+    status: "ongoing",
+    isInWishlist: false,
+    isFavorite: false,
+    episodes: "Ep 1/24",
+  }
+];
