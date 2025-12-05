@@ -52,14 +52,16 @@ function EmptyPage() {
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContainer> 
-        <Stack.Navigator> {/*Stack utilisé pour éviter que Home apparaisse en popup après le login (navigation.replace).*/}
-          <Stack.Screen 
-            name="Tabs" 
-            component={Tabs} 
-            options={{ headerShown: false }} 
+      <NavigationContainer>
+        <Stack.Navigator>
+          {/* Stack utilisé pour éviter que Home apparaisse en popup après le login (navigation.replace). */}
+          <Stack.Screen
+            name="Tabs"
+            component={Tabs}
+            options={{ headerShown: false }}
           />
-          {/*Le Stack Navigator permet d'afficher Login/Register comme des écrans séparés */}
+
+          {/* Le Stack Navigator permet d'afficher Login/Register comme des écrans séparés */}
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
         </Stack.Navigator>
