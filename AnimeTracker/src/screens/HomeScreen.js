@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, FlatList,Alert } from 'react-native';
 import SwipeableAnimeCard from '../components/SwipeableAnimeCard'; // NOUVEL IMPORT
 import { Ionicons } from '@expo/vector-icons';
-
+import { useNavigation } from "@react-navigation/native";
 // Import des dépendances internes
 import { globalStyles, COLORS } from '../constants/styles';
 import AnimeCard from '../components/AnimeCard';
@@ -13,14 +13,36 @@ const TABS = ['Ongoing', 'Wishlist', 'Completed'];
 
 // --- Composants Structurels (utilisent les styles externes) ---
 
-const Header = () => (
-  <View style={globalStyles.header}>
-    <Text style={globalStyles.headerTitle}>AnimeTracker</Text>
-    <TouchableOpacity style={globalStyles.iconBtn}>
-      <Ionicons name="notifications" size={20} color={COLORS.darkText} />
-    </TouchableOpacity>
-  </View>
-);
+import { useAuth } from "../context/AuthContext";
+
+const Header = () => {
+  const navigation = useNavigation();
+  const { isAuthenticated, user } = useAuth();  
+
+  return (
+    <View style={globalStyles.header}>
+      <Text style={globalStyles.headerTitle}>AnimeTracker</Text>
+
+      <TouchableOpacity
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        onPress={() => {
+          if (!isAuthenticated) {
+            navigation.navigate("Login");
+          } else {
+            //si il est connecter sa l'amène a la page setting ou il y a un bouton logout
+            navigation.navigate("Settings"); 
+          }
+        }}
+      >
+        <Ionicons 
+          name={isAuthenticated ? "person-circle" : "person-outline"} 
+          size={28} 
+          color="#000"
+        />
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 const SearchBar = () => (
   <View style={globalStyles.searchContainer}>
