@@ -1,22 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, FlatList } from 'react-native';
-import SwipeableAnimeCard from '../components/SwipeableAnimeCard';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
+
+import SwipeableAnimeCard from "../components/SwipeableAnimeCard";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { globalStyles, COLORS } from '../constants/styles';
-import AnimeCard from '../components/AnimeCard';
-import { useAnime } from '../context/AnimeContext';
-
-// Liste des onglets : DOIT correspondre aux champs de statut dans mockData
-const TABS = ['Tous', 'Watchlist', 'Wishlist', 'Completed'];
-
-// --- Composants Structurels (utilisent les styles externes) ---
-
+import { globalStyles, COLORS } from "../constants/styles";
+import { useAnime } from "../context/AnimeContext";
 import { useAuth } from "../context/AuthContext";
+
+// Onglets disponibles
+const TABS = ["Tous", "Watchlist", "Wishlist", "Completed"];
+
+// ---------------- HEADER ----------------
 
 const Header = () => {
   const navigation = useNavigation();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   return (
     <View style={globalStyles.header}>
@@ -25,12 +32,8 @@ const Header = () => {
       <TouchableOpacity
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         onPress={() => {
-          if (!isAuthenticated) {
-            navigation.navigate("Login");
-          } else {
-            //si il est connecter sa l'amène a la page setting ou il y a un bouton logout
-            navigation.navigate("Settings");
-          }
+          if (!isAuthenticated) navigation.navigate("Login");
+          else navigation.navigate("Settings");
         }}
       >
         <Ionicons
@@ -43,6 +46,8 @@ const Header = () => {
   );
 };
 
+// ---------------- SEARCH BAR ----------------
+
 const SearchBar = () => (
   <View style={globalStyles.searchContainer}>
     <Ionicons name="search" size={20} color={COLORS.lightText} style={{ marginRight: 10 }} />
@@ -50,7 +55,8 @@ const SearchBar = () => (
   </View>
 );
 
-// Composant des Onglets
+// ---------------- TABS ----------------
+
 const Tabs = ({ activeTab, setActiveTab }) => (
   <View style={globalStyles.tabsContainer}>
     {TABS.map((tabName) => (
@@ -63,7 +69,11 @@ const Tabs = ({ activeTab, setActiveTab }) => (
         onPress={() => setActiveTab(tabName)}
       >
         <Text
-          style={activeTab === tabName ? globalStyles.activeTabText : globalStyles.inactiveTabText}
+          style={
+            activeTab === tabName
+              ? globalStyles.activeTabText
+              : globalStyles.inactiveTabText
+          }
         >
           {tabName}
         </Text>
@@ -72,12 +82,15 @@ const Tabs = ({ activeTab, setActiveTab }) => (
   </View>
 );
 
+// ---------------- STATS CARDS ----------------
+
 const StatsCards = ({ watchingCount, completedCount }) => (
   <View style={globalStyles.statsContainer}>
     <View style={[globalStyles.statCard, { backgroundColor: COLORS.primary }]}>
       <Text style={globalStyles.statNumber}>{watchingCount}</Text>
       <Text style={globalStyles.statLabel}>Watching</Text>
     </View>
+
     <View style={[globalStyles.statCard, { backgroundColor: COLORS.secondary }]}>
       <Text style={globalStyles.statNumber}>{completedCount}</Text>
       <Text style={globalStyles.statLabel}>Completed</Text>
@@ -85,63 +98,58 @@ const StatsCards = ({ watchingCount, completedCount }) => (
   </View>
 );
 
-// --- Écran Principal avec Logique ---
+// ---------------- MAIN SCREEN ----------------
 
 export default function HomeScreen() {
-  // On utilise le context global
-  const { animeData, addToWishlist, startWatching, markAsCompleted, toggleFavorite } = useAnime();
+  const {
+    animeData,
+    loading,
+    addToWishlist,
+    startWatching,
+    markAsCompleted,
+    toggleFavorite,
+  } = useAnime();
 
-  // Onglet actif (local à cet écran)
   const [activeTab, setActiveTab] = useState(TABS[0]);
 
-  // Logique de filtrage des animés
-  const filteredAnime = animeData.filter((anime) => {
-    // Onglet "Tous" affiche tous les animés
-    if (activeTab === 'Tous') {
-      return true;
-    }
-    if (activeTab === 'Favorites') {
-      return anime.isFavorite === true;
-    }
-    // Watchlist dans Home affiche les animés "ongoing" (en cours)
-    if (activeTab === 'Watchlist') {
-      return anime.status === 'ongoing';
-    }
-    // Wishlist affiche les animés à regarder plus tard
-    if (activeTab === 'Wishlist') {
-      return anime.status === 'wishlist' && anime.isInWishlist === true;
-    }
+  // ---------------- LOADING SCREEN ----------------
 
-    const targetStatus = activeTab.toLowerCase();
-    return anime.status === targetStatus;
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+        <Text style={{ marginTop: 10 }}>Chargement des animés…</Text>
+      </View>
+    );
+  }
+
+  // ---------------- FILTERING ----------------
+
+  const filteredAnime = animeData.filter((anime) => {
+    if (activeTab === "Tous") return true;
+    if (activeTab === "Favorites") return anime.isFavorite;
+    if (activeTab === "Watchlist") return anime.status === "ongoing";
+    if (activeTab === "Wishlist") return anime.status === "wishlist";
+    if (activeTab === "Completed") return anime.status === "completed";
+    return true;
   });
 
-  const watchingCount = animeData.filter(
-    (anime) => anime.status === 'ongoing'
-  ).length;
+  const watchingCount = animeData.filter((a) => a.status === "ongoing").length;
+  const completedCount = animeData.filter((a) => a.status === "completed").length;
 
-  // Compte des animés terminés (Completed)
-  const completedCount = animeData.filter(
-    (anime) => anime.status === 'completed'
-  ).length;
+  // ---------------- RETURN UI ----------------
 
   return (
     <View style={globalStyles.container}>
-
       <Header />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-
         <SearchBar />
 
-        {/* Composant Tabs qui met à jour l'état */}
         <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {activeTab === 'Watchlist' && (
-          <StatsCards
-            watchingCount={watchingCount}
-            completedCount={completedCount}
-          />
+        {activeTab === "Watchlist" && (
+          <StatsCards watchingCount={watchingCount} completedCount={completedCount} />
         )}
 
         <FlatList
@@ -150,21 +158,26 @@ export default function HomeScreen() {
             <SwipeableAnimeCard
               item={item}
               onToggleFavorite={toggleFavorite}
-              onAddToWishlist={activeTab === 'Tous' ? addToWishlist : undefined}
-              onStartWatching={activeTab === 'Tous' || activeTab === 'Wishlist' ? startWatching : undefined}
-              onMarkCompleted={activeTab === 'Watchlist' ? markAsCompleted : undefined}
+              onAddToWishlist={activeTab === "Tous" ? addToWishlist : undefined}
+              onStartWatching={
+                activeTab === "Tous" || activeTab === "Wishlist"
+                  ? startWatching
+                  : undefined
+              }
+              onMarkCompleted={
+                activeTab === "Watchlist" ? markAsCompleted : undefined
+              }
             />
           )}
-          keyExtractor={item => item.id.toString()}
+          keyExtractor={(item) => item.id.toString()}
           scrollEnabled={false}
           ListEmptyComponent={() => (
-            <Text style={{ textAlign: 'center', marginTop: 50, color: COLORS.lightText }}>
+            <Text style={{ textAlign: "center", marginTop: 50, color: COLORS.lightText }}>
               Aucun animé dans votre liste {activeTab}.
             </Text>
           )}
         />
 
-        {/* Espace vide pour le menu du bas */}
         <View style={{ height: 80 }} />
       </ScrollView>
     </View>
