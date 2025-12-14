@@ -5,12 +5,16 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 
 import { AuthProvider } from "./src/context/AuthContext";
+import { AnimeProvider } from "./src/context/AnimeContext";
 
 // Screens
 import HomeScreen from "./src/screens/HomeScreen";
 import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
 import SettingsScreen from "./src/screens/SettingScreen";
+import WishlistScreen from "./src/screens/WishlistScreen";
+import DashboardScreen from "./src/screens/DashboardScreen";
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -25,7 +29,7 @@ function Tabs() {
           let iconName;
 
           if (route.name === "Home") iconName = focused ? "home" : "home";
-          if (route.name === "Watchlist") iconName = focused ? "list" : "list";
+          if (route.name === "Wishlist") iconName = focused ? "list" : "list";
           if (route.name === "Favorites") iconName = focused ? "heart" : "heart";
           if (route.name === "Settings") iconName = focused ? "settings" : "settings";
 
@@ -36,7 +40,7 @@ function Tabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Watchlist" component={EmptyPage} />
+      <Tab.Screen name="Wishlist" component={WishlistScreen} />
       <Tab.Screen name="Favorites" component={EmptyPage} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
@@ -52,20 +56,23 @@ function EmptyPage() {
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContainer>
-        <Stack.Navigator>
-          {/* Stack utilisé pour éviter que Home apparaisse en popup après le login (navigation.replace). */}
-          <Stack.Screen
-            name="Tabs"
-            component={Tabs}
-            options={{ headerShown: false }}
-          />
+      <AnimeProvider>
+        <NavigationContainer>
+          <Stack.Navigator>
+            {/* Stack utilisé pour éviter que Home apparaisse en popup après le login (navigation.replace). */}
+            <Stack.Screen
+              name="Tabs"
+              component={Tabs}
+              options={{ headerShown: false }}
+            />
 
-          {/* Le Stack Navigator permet d'afficher Login/Register comme des écrans séparés */}
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
+            {/* Le Stack Navigator permet d'afficher Login/Register comme des écrans séparés */}
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </AnimeProvider>
     </AuthProvider>
   );
 }
