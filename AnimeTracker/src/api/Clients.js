@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
-const BASE_URL = "https://animetracker-api.onrender.com/"; 
+const BASE_URL = "https://animetracker-api.onrender.com/api"; 
 
 {/*Ici on se connect au backend avec notre ip pour l'instant en utilisant 
  le port 3000, ou roule notre backend du cours de collecte de doonées*/}

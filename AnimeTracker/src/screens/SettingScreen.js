@@ -7,8 +7,6 @@ export default function SettingsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      
-      
       {isAuthenticated ? ( //Si l'utilisateur est connecté
         <>
           <Text style={styles.title}>Paramètres</Text>
@@ -28,8 +26,14 @@ export default function SettingsScreen({ navigation }) {
           >
             <Text style={styles.logoutText}>Se déconnecter</Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
+            <Text style={styles.dashboardButton}>
+              📊 Voir le Dashboard
+            </Text>
+          </TouchableOpacity>
         </>
-      ) : ( //Si l'utilisateur n'est pas connecté
+      ) : (
+        //Si l'utilisateur n'est pas connecté
         <>
           <Text style={styles.notConnected}>Vous n'êtes pas connecté.</Text>
 
@@ -41,14 +45,13 @@ export default function SettingsScreen({ navigation }) {
           </TouchableOpacity>
         </>
       )}
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
+  container: {
+    flex: 1,
     padding: 20,
     backgroundColor: "#fff",
     justifyContent: "center",
@@ -100,5 +103,12 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+  },
+  dashboardButton: {
+    backgroundColor: "grey",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 15, // ajoute de l’espace avec le bouton précédent
   },
 });

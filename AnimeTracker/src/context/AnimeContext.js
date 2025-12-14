@@ -11,7 +11,7 @@ export const AnimeProvider = ({ children }) => {
 
   const fetchAnimesFromAPI = async () => {
     try {
-      const res = await client.get("/api/animeList"); 
+      const res = await client.get("/animeList"); 
       setAnimeData(
         res.data.data.map((a) => ({
           id: a._id,           // Mongo ID
