@@ -5,6 +5,8 @@ import ScoreDistributionChart from "../components/ScoreDistributionChart";
 import GenrePieChart from "../components/GenrePieChart";
 import ScoreComparisonChart from "../components/ScoreComparisonChart";
 import { useAnime } from "../context/AnimeContext";
+import StudioChart from "../components/StudioChart";
+import YearChart from "../components/YearChart";
 
 export default function DashboardScreen() {
   const { animeData, genreData, scoreData, loadingAnalytics } = useAnime();
@@ -16,6 +18,12 @@ export default function DashboardScreen() {
       <EpisodeDistributionChart  data={animeData} />
 
       <ScoreDistributionChart data={animeData} />
+
+     
+            <YearChart data={animeData} />
+
+            
+            <StudioChart data={animeData} />
 
       
       <Text style={{ fontSize: 18, marginTop: 30, marginBottom: 10, color: 'gray' }}>
