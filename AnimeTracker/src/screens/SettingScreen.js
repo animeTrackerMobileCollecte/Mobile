@@ -1,9 +1,20 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import { useAnime } from "../context/AnimeContext";
 
 export default function SettingsScreen({ navigation }) {
   const { user, logout, isAuthenticated } = useAuth();
+  const { resetUserData } = useAnime();
+
+    const handleLogout = async () => {
+        // 1. On vide les animes (AnimeContext)
+        resetUserData();
+
+        // 2. On supprime le token (AuthContext)
+        await logout();
+    };
+  
 
   return (
     <View style={styles.container}>
@@ -20,7 +31,7 @@ export default function SettingsScreen({ navigation }) {
           <TouchableOpacity
             style={styles.logoutButton}
             onPress={() => {
-              logout();
+              handleLogout();
               navigation.replace("Tabs"); // retourne à Home après logout
             }}
           >

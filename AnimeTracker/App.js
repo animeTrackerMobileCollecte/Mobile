@@ -14,6 +14,7 @@ import RegisterScreen from "./src/screens/RegisterScreen";
 import SettingsScreen from "./src/screens/SettingScreen";
 import WishlistScreen from "./src/screens/WishlistScreen";
 import DashboardScreen from "./src/screens/DashboardScreen";
+import AnimeDetailsScreen from "./src/screens/AnimeDetailsScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -55,9 +56,9 @@ function EmptyPage() {
 // simple stack (Tabs + Login + Register)
 export default function App() {
   return (
+    <NavigationContainer>
     <AuthProvider>
       <AnimeProvider>
-        <NavigationContainer>
           <Stack.Navigator>
             {/* Stack utilisé pour éviter que Home apparaisse en popup après le login (navigation.replace). */}
             <Stack.Screen
@@ -70,9 +71,10 @@ export default function App() {
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            <Stack.Screen name="AnimeDetails" component={AnimeDetailsScreen} options={{ headerShown: false }} />
           </Stack.Navigator>
-        </NavigationContainer>
       </AnimeProvider>
     </AuthProvider>
+    </NavigationContainer>
   );
 }

@@ -1,14 +1,12 @@
-
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SwipeListView } from 'react-native-swipe-list-view';
 
 import AnimeCard from './AnimeCard';
-import { COLORS } from '../constants/styles';
+import { COLORS } from '../constants/styles'; 
 
 export default function SwipeableAnimeCard({ item, onToggleFavorite, onAddToWishlist, onStartWatching, onMarkCompleted, onDelete }) {
-
 
   const HiddenItemWithActions = ({
     swipeAnimatedValue,
@@ -23,7 +21,6 @@ export default function SwipeableAnimeCard({ item, onToggleFavorite, onAddToWish
     <View style={styles.rowBack}>
 
       {onMarkCompleted ? (
-
         <TouchableOpacity
           style={[styles.backBtn, styles.backBtnLeft]}
           onPress={() => onMarkCompleted(data.item.id)}
@@ -32,7 +29,6 @@ export default function SwipeableAnimeCard({ item, onToggleFavorite, onAddToWish
           <Text style={styles.backBtnText}>Terminé</Text>
         </TouchableOpacity>
       ) : onStartWatching ? (
-
         <TouchableOpacity
           style={[styles.backBtn, styles.backBtnLeft]}
           onPress={() => onStartWatching(data.item.id)}
@@ -44,7 +40,6 @@ export default function SwipeableAnimeCard({ item, onToggleFavorite, onAddToWish
 
 
       {(onStartWatching && onAddToWishlist) ? (
-
         <TouchableOpacity
           style={[styles.backBtn, styles.backBtnRight]}
           onPress={() => onAddToWishlist(data.item.id)}
@@ -53,7 +48,6 @@ export default function SwipeableAnimeCard({ item, onToggleFavorite, onAddToWish
           <Text style={styles.backBtnText}>Wishlist</Text>
         </TouchableOpacity>
       ) : onDelete ? (
-
         <TouchableOpacity
           style={[styles.backBtn, styles.backBtnRight]}
           onPress={() => onDelete(data.item.id)}
@@ -67,14 +61,14 @@ export default function SwipeableAnimeCard({ item, onToggleFavorite, onAddToWish
 
   return (
     <SwipeListView
-      disableRightSwipe={false} // Désactive le swipe vers la droite si vous ne voulez que le bouton Wishlist
-      data={[item]} // SwipeListView attend un tableau, même pour un seul élément
-      renderItem={({ item: anime }) => ( // Renvoie votre AnimeCard comme l'élément de devant
+      disableRightSwipe={false} 
+      data={[item]} 
+      keyExtractor={(item) => String(item.id)} 
+      renderItem={({ item: anime }) => ( 
         <AnimeCard
-          item={anime}
+          
+          anime={anime} 
           onToggleFavorite={onToggleFavorite}
-        // Si vous voulez que la carte elle-même soit cliquable pour les détails
-        // onPress={() => navigation.navigate('Details', { animeId: anime.id })}
         />
       )}
       renderHiddenItem={(data, rowMap) => (
@@ -87,11 +81,11 @@ export default function SwipeableAnimeCard({ item, onToggleFavorite, onAddToWish
           onDelete={onDelete}
         />
       )}
-      leftOpenValue={75} // La largeur du bouton caché (Wishlist)
-      rightOpenValue={-75} // Pour un bouton à droite (suppression)
-      previewRowKey={'0'} // Clé pour prévisualiser le swipe (optionnel)
-      previewOpenValue={40} // Valeur d'ouverture pour la prévisualisation
-      previewOpenDelay={1000} // Délai de la prévisualisation
+      leftOpenValue={75} 
+      rightOpenValue={-75} 
+      previewRowKey={'0'} 
+      previewOpenValue={40} 
+      previewOpenDelay={1000} 
     />
   );
 }
@@ -99,13 +93,14 @@ export default function SwipeableAnimeCard({ item, onToggleFavorite, onAddToWish
 const styles = StyleSheet.create({
   rowBack: {
     alignItems: 'center',
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.background || '#f0f0f0', 
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingLeft: 10,
     borderRadius: 16,
     marginBottom: 15,
+    marginHorizontal: 10, 
   },
   backBtn: {
     alignItems: 'center',
@@ -117,13 +112,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   backBtnLeft: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.primary || '#6C63FF',
     left: 0,
     borderTopLeftRadius: 16,
     borderBottomLeftRadius: 16,
   },
   backBtnRight: {
-    backgroundColor: COLORS.red,
+    backgroundColor: COLORS.red || '#FF6B6B',
     right: 0,
     borderTopRightRadius: 16,
     borderBottomRightRadius: 16,

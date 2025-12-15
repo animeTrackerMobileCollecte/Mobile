@@ -2,8 +2,9 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { cardStyles, COLORS } from '../constants/styles';
+import { useNavigation } from "@react-navigation/native";
 
-// Fonction interne pour afficher les étoiles
+
 const renderStars = (rating) => {
   return (
     <View style={{ flexDirection: 'row' }}>
@@ -22,41 +23,51 @@ const renderStars = (rating) => {
   );
 };
 
-export default function AnimeCard({ item, onToggleFavorite }) {
-  return (
-    <View style={cardStyles.card}>
-      {/* Colonne 1 : Image */}
-      <Image source={{ uri: item.image }} style={cardStyles.cardImage} />
 
-      {/* Colonne 2 : Contenu */}
+export default function AnimeCard({ item, anime, onToggleFavorite }) {
+  const navigation = useNavigation();
+  const data = anime || item;
+  if (!data) return null;
+
+  return (
+    <TouchableOpacity 
+        style={cardStyles.card} 
+        onPress={() => navigation.navigate('AnimeDetails', { anime: data })}
+        activeOpacity={0.9}
+    >
+      <Image source={{ uri: data.image || data.imageUrl }} style={cardStyles.cardImage} />
+
+      
       <View style={cardStyles.cardContent}>
 
-        {/* Ligne 1 : Titre et Cœur */}
+        
         <View style={cardStyles.cardHeader}>
-          <Text style={cardStyles.animeTitle}>{item.title}</Text>
+          <Text style={cardStyles.animeTitle} numberOfLines={1}>{data.title}</Text>
 
-          <TouchableOpacity onPress={() => onToggleFavorite(item.id)}>
+          <TouchableOpacity onPress={() => onToggleFavorite(data.id)}>
             <Ionicons
-              name={item.isFavorite ? "heart" : "heart"} // Le cœur actif est rempli
+              name={data.isFavorite ? "heart" : "heart"} 
               size={20}
-              color={item.isFavorite ? COLORS.red : COLORS.lightText}
-            // L'icône outline est gérée par la couleur ici (red ou lightText)
+              color={data.isFavorite ? COLORS.red : COLORS.lightText}
             />
           </TouchableOpacity>
         </View>
 
-        {renderStars(item.rating)}
+        
+        {renderStars(data.rating || data.jikanScore || 0)}
 
-        {/* Ligne 3 : Tag et Épisodes */}
+        
         <View style={cardStyles.cardFooter}>
           <View style={cardStyles.tagContainer}>
             <Text style={cardStyles.tagText}>
-              {item.status ? item.status.toUpperCase() : 'À DÉCOUVRIR'}
+              {data.status ? data.status.toUpperCase() : 'À DÉCOUVRIR'}
             </Text>
           </View>
-          <Text style={cardStyles.episodeText}>{item.episodes}</Text>
+          <Text style={cardStyles.episodeText}>
+             {data.episodes ? `${data.episodes} EP` : '? EP'}
+          </Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

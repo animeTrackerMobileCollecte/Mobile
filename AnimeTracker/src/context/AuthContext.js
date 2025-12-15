@@ -7,12 +7,14 @@ import React, {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import client from "../api/Clients";
 
+
 const AuthContext = createContext(null);
+
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true); // chargement initial (AsyncStorage)
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     const loadAuthFromStorage = async () => {
@@ -66,6 +68,7 @@ const register = async (username, email, password) => {
     setToken(null);
     await AsyncStorage.removeItem("token");
     await AsyncStorage.removeItem("user");
+   
   };
 
   const value = {
