@@ -15,7 +15,7 @@ import SettingsScreen from "./src/screens/SettingScreen";
 import WishlistScreen from "./src/screens/WishlistScreen";
 import DashboardScreen from "./src/screens/DashboardScreen";
 import AnimeDetailsScreen from "./src/screens/AnimeDetailsScreen";
-
+import FavoriteScreen from "./src/screens/FavoriteScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -42,7 +42,7 @@ function Tabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Wishlist" component={WishlistScreen} />
-      <Tab.Screen name="Favorites" component={EmptyPage} />
+      <Tab.Screen name="Favorites" component={FavoriteScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
