@@ -14,11 +14,12 @@ import { useNavigation } from "@react-navigation/native";
 import { globalStyles, COLORS } from "../constants/styles";
 import { useAuth } from "../context/AuthContext";
 import { useAnime } from "../context/AnimeContext";
+import { useTheme } from "../context/ThemeContext"; // Ajouté
 import SwipeableAnimeCard from "../components/SwipeableAnimeCard";
 
-const Header = ({ isAuthenticated, navigation }) => (
+const Header = ({ isAuthenticated, navigation, theme }) => (
   <View style={globalStyles.header}>
-    <Text style={globalStyles.headerTitle}>AnimeTracker</Text>
+    <Text style={[globalStyles.headerTitle, { color: theme.text }]}>AnimeTracker</Text>
     <TouchableOpacity
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       onPress={() =>
@@ -30,22 +31,24 @@ const Header = ({ isAuthenticated, navigation }) => (
       <Ionicons
         name={isAuthenticated ? "person-circle" : "person-outline"}
         size={28}
-        color="#000"
+        color={theme.text} 
       />
     </TouchableOpacity>
   </View>
 );
 
-const Tabs = ({ activeTab, setActiveTab }) => {
+const Tabs = ({ activeTab, setActiveTab, theme }) => {
   const TABS = ["Tous", "Watchlist", "Wishlist", "Completed"];
   return (
-    <View style={globalStyles.tabsContainer}>
+    <View style={[globalStyles.tabsContainer, { backgroundColor: theme.background }]}>
       {TABS.map((tabName) => (
         <TouchableOpacity
           key={tabName}
           style={[
             globalStyles.tabButton,
-            activeTab === tabName ? globalStyles.activeTab : null,
+            activeTab === tabName 
+              ? globalStyles.activeTab 
+              : { backgroundColor: theme.card } // Utilise la couleur de carte pour les onglets inactifs
           ]}
           onPress={() => setActiveTab(tabName)}
         >
@@ -53,7 +56,7 @@ const Tabs = ({ activeTab, setActiveTab }) => {
             style={
               activeTab === tabName
                 ? globalStyles.activeTabText
-                : globalStyles.inactiveTabText
+                : { color: theme.subText, fontSize: 13 }
             }
           >
             {tabName}
@@ -64,8 +67,6 @@ const Tabs = ({ activeTab, setActiveTab }) => {
   );
 };
 
-
-
 export default function HomeScreen() {
   const navigation = useNavigation();
   const { isAuthenticated } = useAuth();
@@ -75,7 +76,12 @@ export default function HomeScreen() {
     startWatching,
     markAsCompleted,
     toggleFavorite,
+    removeFromWishlist, // Ajouté car utilisé dans ton renderItem
   } = useAnime();
+
+  // Thème
+  const { isDarkMode } = useTheme();
+  const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
   // États pour les données API
   const [animeList, setAnimeList] = useState([]);
@@ -88,15 +94,9 @@ export default function HomeScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  // URL de ton serveur
   const BASE_URL = "https://animetracker-api.onrender.com/api/animeList";
 
-
-  const loadAnimesFromAPI = async (
-    searchText = "",
-    page = 1,
-    append = false
-  ) => {
+  const loadAnimesFromAPI = async (searchText = "", page = 1, append = false) => {
     if (page > 1) setLoadingMore(true);
     else setIsSearching(true);
 
@@ -115,7 +115,6 @@ export default function HomeScreen() {
         setAnimeList(newData);
       }
 
-      // Si on reçoit moins que la limite (20), il n'y a plus rien à charger
       setHasMore(newData.length === 20);
       setCurrentPage(page);
     } catch (e) {
@@ -126,11 +125,9 @@ export default function HomeScreen() {
     }
   };
 
-  // Chargement initial
   useEffect(() => {
     loadAnimesFromAPI("", 1, false);
   }, []);
-
 
   const handleSearch = (text) => {
     setSearch(text);
@@ -145,55 +142,42 @@ export default function HomeScreen() {
     }
   };
 
-
   const handleLoadMore = () => {
     if (loadingMore || isSearching || !hasMore || activeTab !== "Tous") return;
     loadAnimesFromAPI(search, currentPage + 1, true);
   };
 
-
   const getFilteredData = () => {
-  if (activeTab === "Tous") {
+    if (activeTab === "Tous") {
+      return animeList.map((apiAnime) => {
+        const isFav = animeData.some(
+          (local) => local.malId === apiAnime.malId && local.isFavorite
+        );
+        return { ...apiAnime, isFavorite: isFav };
+      });
+    }
 
-    return animeList.map((apiAnime) => {
-      const isFav = animeData.some(
-        (local) => local.malId === apiAnime.malId && local.isFavorite
-      );
-      
-      return {
-        ...apiAnime,
-        isFavorite: isFav, 
-      };
-    });
-  }
+    let baseData = animeData || [];
+    if (activeTab === "Watchlist") baseData = baseData.filter((a) => a.status === "ongoing");
+    if (activeTab === "Wishlist") baseData = baseData.filter((a) => a.status === "wishlist" || a.isInWishlist === true);
+    if (activeTab === "Completed") baseData = baseData.filter((a) => a.status === "completed");
 
-  let baseData = animeData || [];
-  if (activeTab === "Watchlist")
-    baseData = baseData.filter((a) => a.status === "ongoing");
-  if (activeTab === "Wishlist")
-    baseData = baseData.filter(
-      (a) => a.status === "wishlist" || a.isInWishlist === true
-    );
-  if (activeTab === "Completed")
-    baseData = baseData.filter((a) => a.status === "completed");
+    if (search.length > 0) {
+      return baseData.filter((a) => a.title.toLowerCase().includes(search.toLowerCase()));
+    }
+    return baseData;
+  };
 
-  if (search.length > 0) {
-    return baseData.filter((a) =>
-      a.title.toLowerCase().includes(search.toLowerCase())
-    );
-  }
-  return baseData;
-};
   return (
-    <View style={globalStyles.container}>
-      <Header isAuthenticated={isAuthenticated} navigation={navigation} />
+    <View style={[globalStyles.container, { backgroundColor: theme.background }]}>
+      <Header isAuthenticated={isAuthenticated} navigation={navigation} theme={theme} />
 
       {/* BARRE DE RECHERCHE */}
-      <View style={globalStyles.searchContainer}>
+      <View style={[globalStyles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border, borderWidth: 1 }]}>
         <Ionicons
           name="search"
           size={20}
-          color={COLORS.lightText}
+          color={theme.subText}
           style={{ marginRight: 10 }}
         />
         <TextInput
@@ -202,7 +186,8 @@ export default function HomeScreen() {
               ? "Chercher dans tout le catalogue..."
               : `Chercher dans ${activeTab}...`
           }
-          style={[globalStyles.searchInput, { flex: 1 }]}
+          placeholderTextColor={theme.subText}
+          style={[globalStyles.searchInput, { flex: 1, color: theme.text }]}
           value={search}
           onChangeText={handleSearch}
           autoCorrect={false}
@@ -221,6 +206,7 @@ export default function HomeScreen() {
           if (tab === "Tous" && animeList.length === 0)
             loadAnimesFromAPI("", 1, false);
         }}
+        theme={theme}
       />
 
       {/* LISTE AVEC INFINITE SCROLL */}
@@ -231,7 +217,6 @@ export default function HomeScreen() {
         }
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 20 }}
-        // Infinite Scroll
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={() =>
@@ -244,7 +229,6 @@ export default function HomeScreen() {
           )
         }
         renderItem={({ item }) => {
-          // On définit les conditions ici, juste avant le return
           const isAllTab = activeTab === "Tous";
           const isWishlistTab = activeTab === "Wishlist";
           const isWatchlistTab = activeTab === "Watchlist";
@@ -253,27 +237,16 @@ export default function HomeScreen() {
             <SwipeableAnimeCard
               item={item}
               onToggleFavorite={() => toggleFavorite(item.malId)}
-              // Utilisation directe des conditions pour éviter les erreurs
-              onAddToWishlist={
-                isAllTab ? () => addToWishlist(item.malId) : undefined
-              }
-              onStartWatching={
-                isAllTab || isWishlistTab
-                  ? () => startWatching(item.malId)
-                  : undefined
-              }
-              onMarkCompleted={
-                isWatchlistTab ? () => markAsCompleted(item.malId) : undefined
-              }
-              onDelete={
-                !isAllTab ? () => removeFromWishlist(item.malId) : undefined
-              }
+              onAddToWishlist={isAllTab ? () => addToWishlist(item.malId) : undefined}
+              onStartWatching={isAllTab || isWishlistTab ? () => startWatching(item.malId) : undefined}
+              onMarkCompleted={isWatchlistTab ? () => markAsCompleted(item.malId) : undefined}
+              onDelete={!isAllTab ? () => removeFromWishlist(item.malId) : undefined}
             />
           );
         }}
         ListEmptyComponent={() => (
           <View style={{ alignItems: "center", marginTop: 50 }}>
-            <Text style={{ color: COLORS.lightText }}>
+            <Text style={{ color: theme.subText }}>
               {isSearching ? "Chargement..." : `Aucun animé trouvé`}
             </Text>
           </View>

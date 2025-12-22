@@ -1,10 +1,14 @@
-// src/screens/RegisterScreen.js
 import React, { useState } from "react";
-import {View,Text,TextInput,TouchableOpacity,StyleSheet,ActivityIndicator} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext"; 
+import { COLORS } from "../constants/styles";
 
 const RegisterScreen = ({ navigation, route }) => {
   const { register } = useAuth();
+  const { isDarkMode } = useTheme();
+  const theme = isDarkMode ? COLORS.dark : COLORS.light;
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,8 +26,7 @@ const RegisterScreen = ({ navigation, route }) => {
     } catch (e) {
       console.log("Register error:", e.response?.data || e.message);
       setError(
-        e.response?.data?.message ||
-          "Impossible de créer le compte. Vérifie les champs."
+        e.response?.data?.message || "Impossible de créer le compte. Vérifie les champs."
       );
     } finally {
       setSubmitting(false);
@@ -31,22 +34,24 @@ const RegisterScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Créer un compte</Text>
-      <Text style={styles.subtitle}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={[styles.title, { color: theme.text }]}>Créer un compte</Text>
+      <Text style={[styles.subtitle, { color: theme.subText }]}>
         Sauvegarde ta Watchlist, ta Wishlist et tes stats.
       </Text>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.card, color: theme.text }]}
         placeholder="Nom d'utilisateur"
+        placeholderTextColor={theme.subText}
         value={username}
         onChangeText={setUsername}
       />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.card, color: theme.text }]}
         placeholder="Email"
+        placeholderTextColor={theme.subText}
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
@@ -54,8 +59,9 @@ const RegisterScreen = ({ navigation, route }) => {
       />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.card, color: theme.text }]}
         placeholder="Mot de passe"
+        placeholderTextColor={theme.subText}
         secureTextEntry
         value={password}
         onChangeText={setPassword}
@@ -77,13 +83,9 @@ const RegisterScreen = ({ navigation, route }) => {
 
       <TouchableOpacity
         style={styles.linkButton}
-        onPress={() =>
-          navigation.replace("Login", {
-            redirectTo,
-          })
-        }
+        onPress={() => navigation.replace("Login", { redirectTo })}
       >
-        <Text style={styles.linkText}>
+        <Text style={[styles.linkText, { color: theme.subText }]}>
           Déjà un compte ?{" "}
           <Text style={styles.linkTextBold}>Se connecter</Text>
         </Text>
@@ -99,7 +101,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     justifyContent: "center",
-    backgroundColor: "#fff",
   },
   title: {
     fontSize: 28,
@@ -108,18 +109,16 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: "#666",
     marginBottom: 24,
   },
   input: {
-    backgroundColor: "#f3f3f3",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginBottom: 12,
   },
   primaryButton: {
-    backgroundColor: "#28a745",
+    backgroundColor: "#28a745", // Vert conservation
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
@@ -138,7 +137,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   linkText: {
-    color: "#555",
+    fontSize: 14,
   },
   linkTextBold: {
     color: "#007bff",

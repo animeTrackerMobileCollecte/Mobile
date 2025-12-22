@@ -1,10 +1,14 @@
-// src/screens/LoginScreen.js
 import React, { useState } from "react";
-import {View,Text,TextInput,TouchableOpacity,StyleSheet,ActivityIndicator} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext"; 
+import { COLORS } from "../constants/styles";
 
 const LoginScreen = ({ navigation, route }) => {
   const { login } = useAuth();
+  const { isDarkMode } = useTheme();
+  const theme = isDarkMode ? COLORS.dark : COLORS.light;
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -17,13 +21,11 @@ const LoginScreen = ({ navigation, route }) => {
     setSubmitting(true);
     try {
       await login(email.trim(), password);
-      // Retourner là d'où on vient, sinon Home
       navigation.replace("Tabs");
     } catch (e) {
       console.log("Login error:", e.response?.data || e.message);
       setError(
-        e.response?.data?.message ||
-          "Impossible de se connecter. Vérifie tes infos."
+        e.response?.data?.message || "Impossible de se connecter. Vérifie tes infos."
       );
     } finally {
       setSubmitting(false);
@@ -31,13 +33,14 @@ const LoginScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenue 👋</Text>
-      <Text style={styles.subtitle}>Connecte-toi pour gérer tes listes.</Text>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={[styles.title, { color: theme.text }]}>Bienvenue 👋</Text>
+      <Text style={[styles.subtitle, { color: theme.subText }]}>Connecte-toi pour gérer tes listes.</Text>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.card, color: theme.text }]}
         placeholder="Email"
+        placeholderTextColor={theme.subText}
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
@@ -45,8 +48,9 @@ const LoginScreen = ({ navigation, route }) => {
       />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.card, color: theme.text }]}
         placeholder="Mot de passe"
+        placeholderTextColor={theme.subText}
         secureTextEntry
         value={password}
         onChangeText={setPassword}
@@ -68,13 +72,9 @@ const LoginScreen = ({ navigation, route }) => {
 
       <TouchableOpacity
         style={styles.linkButton}
-        onPress={() =>
-          navigation.replace("Register", {
-            redirectTo,
-          })
-        }
+        onPress={() => navigation.replace("Register", { redirectTo })}
       >
-        <Text style={styles.linkText}>
+        <Text style={[styles.linkText, { color: theme.subText }]}>
           Pas de compte ?{" "}
           <Text style={styles.linkTextBold}>Créer un compte</Text>
         </Text>
@@ -90,7 +90,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     justifyContent: "center",
-    backgroundColor: "#fff",
   },
   title: {
     fontSize: 28,
@@ -99,11 +98,9 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: "#666",
     marginBottom: 24,
   },
   input: {
-    backgroundColor: "#f3f3f3",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -129,7 +126,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   linkText: {
-    color: "#555",
+    fontSize: 14,
   },
   linkTextBold: {
     color: "#007bff",

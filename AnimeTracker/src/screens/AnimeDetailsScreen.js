@@ -1,263 +1,173 @@
-import React, { useState } from 'react';
-import { 
-  View, Text, ImageBackground, StyleSheet, ScrollView, 
-  TouchableOpacity, Dimensions, StatusBar 
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { useAnime } from '../context/AnimeContext';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Dimensions,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useAnime } from "../context/AnimeContext";
+import { useTheme } from "../context/ThemeContext";
+import { COLORS } from "../constants/styles";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
-export default function AnimeDetailsScreen() {
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { rateAnime } = useAnime();
-  // 1. On récupère les params, mais on met une sécurité {} au cas où params est vide
-  const { anime } = route.params || {}; 
+export default function AnimeDetailsScreen({ route, navigation }) {
+  const { anime } = route.params;
+  const { addToWishlist, startWatching, markAsCompleted } = useAnime();
+  const { isDarkMode } = useTheme();
+  const theme = isDarkMode ? COLORS.dark : COLORS.light;
   
+  const [userRating, setUserRating] = useState(0);
 
-  // 2. SÉCURITÉ CRITIQUE : Si 'anime' n'existe pas, on affiche un chargement ou on rentre
-  if (!anime) {
-      return (
-          <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-              <Text>Erreur : Impossible de charger les détails.</Text>
-              <Button title="Retour" onPress={() => navigation.goBack()} />
-          </View>
-      );
-  }
-
-  // --- ÉTATS LOCAUX ---
-  const [rating, setRating] = useState(anime.personalScore ? anime.personalScore / 2 : 0); // Si tu as déjà noté, on affiche ta note
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-
-  // --- LOGIQUE DE NOTATION ---
-  const handleStarPress = (starIndex) => {
-    setRating(starIndex);
+  const handleAddToList = () => {
+    Alert.alert(
+      "Add to List",
+      "Choose a destination for this anime:",
+      [
+        { text: "Watchlist (En cours)", onPress: () => startWatching(anime.malId || anime.id) },
+        { text: "Wishlist (À voir)", onPress: () => addToWishlist(anime.malId || anime.id) },
+        { text: "Completed (Terminé)", onPress: () => markAsCompleted(anime.malId || anime.id) },
+        { text: "Cancel", style: "cancel" },
+      ]
+    );
   };
 
-  const handleSubmitRating = () => {
-    if (rating > 0) {
-      rateAnime(anime.malId, rating); 
-    }
+  const renderStars = () => {
+    return (
+      <View style={styles.starRow}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity key={star} onPress={() => setUserRating(star)}>
+            <Ionicons
+              name={star <= userRating ? "star" : "star-outline"}
+              size={32}
+              color={COLORS.star}
+              style={{ marginHorizontal: 5 }}
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <StatusBar barStyle="light-content" />
-
-      {/* --- HEADER IMAGE --- */}
-      {/* Note: Ton model utilise 'imageUrl', pas 'image' */}
-      <ImageBackground 
-        source={{ uri: anime.imageUrl || 'https://via.placeholder.com/400' }} 
-        style={styles.headerImage}
-      >
-        <LinearGradient
-          colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.8)']}
-          style={styles.gradient}
-        >
-          {/* Header Buttons */}
-          <View style={styles.headerButtons}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-              <Ionicons name="arrow-back" size={24} color="#FFF" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
-              <Ionicons name="ellipsis-vertical" size={24} color="#FFF" />
-            </TouchableOpacity>
-          </View>
-
-          {/* TITRES */}
-          <View style={styles.titleContainer}>
-            <Text style={styles.animeTitle}>{anime.title}</Text>
-            {/* Affichage du titre japonais (Nouveau champ) */}
-            <Text style={styles.animeSubTitle}>
-                {anime.title_japanese ? anime.title_japanese : 'Titre original N/A'}
-            </Text>
-          </View>
-        </LinearGradient>
-      </ImageBackground>
-
-      {/* --- CONTENU BLANC ARRONDI --- */}
-      <View style={styles.contentContainer}>
-        
-        {/* LIGNE : NOTE GLOBALE (Jikan Score) */}
-        <View style={styles.ratingRow}>
-          <View style={styles.globalRating}>
-            <Ionicons name="star" size={20} color="#FFD700" />
-            {/* Affichage du Score Jikan (ex: 8.75) */}
-            <Text style={styles.ratingText}>
-                {anime.rating || anime.jikanScore || 'N/A'}
-            </Text>
-            <Text style={styles.voteCount}>(Global)</Text>
-          </View>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Poster Header */}
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: anime.image || anime.imageUrl }} style={styles.mainImage} />
+          <View style={styles.overlay} />
           
-          <TouchableOpacity style={styles.addListBtn}>
-            <Ionicons name="add" size={18} color="#FFF" />
-            <Text style={styles.addListText}>Add to List</Text>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#FFF" />
           </TouchableOpacity>
-        </View>
 
-        {/* --- GRID D'INFOS (Connecté à ton Model) --- */}
-        <View style={styles.statsGrid}>
-           <InfoBox label="STATUS" value={anime.publicationStatus || 'Unknown'} />
-           <InfoBox label="EPISODES" value={anime.episodes ? String(anime.episodes) : '?'} />
-           <InfoBox label="YEAR" value={anime.year ? String(anime.year) : '?'} />
-           <InfoBox label="STUDIO" value={anime.studio || 'Unknown'} />
-        </View>
-
-        {/* --- GENRES (Boucle sur les strings) --- */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Genres</Text>
-          <View style={styles.genreContainer}>
-            {anime.genres && anime.genres.length > 0 ? (
-                // Ton backend envoie maintenant ["Action", "Sci-Fi"] (Tableau de strings)
-                anime.genres.map((genreName, index) => (
-                    <GenreChip key={index} label={genreName} />
-                ))
-            ) : (
-                <Text style={{color: 'gray'}}>Aucun genre listé</Text>
-            )}
+          <View style={styles.headerInfo}>
+            <Text style={styles.headerTitle}>{anime.title}</Text>
+            <Text style={styles.headerJapanese}>{anime.title_japanese || ""}</Text>
           </View>
         </View>
 
-        {/* --- SYNOPSIS --- */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Synopsis</Text>
-          <Text 
-            style={styles.synopsisText} 
-            numberOfLines={isDescriptionExpanded ? undefined : 4}
-          >
-            {anime.synopsis || "Aucune description disponible."}
-          </Text>
-          {anime.synopsis && anime.synopsis.length > 150 && (
-              <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
-                <Text style={styles.readMore}>{isDescriptionExpanded ? "Show less" : "Read more"}</Text>
-              </TouchableOpacity>
-          )}
-        </View>
-
-        {/* --- TA ZONE DE NOTATION --- */}
-        <View style={styles.ratingSection}>
-            <Text style={styles.ratingTitle}>Your Rating</Text>
-            
-            <View style={styles.starsContainer}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                    <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
-                        <Ionicons 
-                            name={rating >= star ? "star" : "star-outline"} 
-                            size={40} 
-                            color={rating >= star ? "#FFD700" : "#CCC"} 
-                            style={{ marginHorizontal: 5 }}
-                        />
-                    </TouchableOpacity>
-                ))}
+        {/* Main Content Card */}
+        <View style={[styles.detailsCard, { backgroundColor: theme.card }]}>
+          <View style={styles.topRow}>
+            <View style={styles.globalScore}>
+              <Ionicons name="star" size={18} color={COLORS.star} />
+              <Text style={[styles.scoreText, { color: theme.text }]}>
+                {anime.rating || anime.jikanScore || "N/A"}
+                <Text style={styles.globalLabel}> (Global)</Text>
+              </Text>
             </View>
             
-            <Text style={styles.ratingLabel}>
-                {rating > 0 ? `${rating}/5` : "Not rated yet"}
-            </Text>
-
-            <TouchableOpacity 
-                style={[styles.submitBtn, { backgroundColor: rating > 0 ? '#6C63FF' : '#AAA' }]}
-                disabled={rating === 0}
-                onPress={handleSubmitRating}
-            >
-                <Text style={styles.submitBtnText}>Submit Rating</Text>
+            <TouchableOpacity style={styles.addBtn} onPress={handleAddToList}>
+              <Ionicons name="add" size={18} color="#FFF" />
+              <Text style={styles.addBtnText}>Add to List</Text>
             </TouchableOpacity>
-        </View>
+          </View>
 
-        {/* Espace vide pour le scroll */}
-        <View style={{ height: 50 }} />
-      </View>
-    </ScrollView>
+          {/* Stats Grid */}
+          <View style={styles.statsGrid}>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>STATUS</Text>
+              <Text style={[styles.statValue, { color: theme.text }]}>{anime.status || "Unknown"}</Text>
+              <Text style={styles.statLabel}>YEAR</Text>
+              <Text style={[styles.statValue, { color: theme.text }]}>{anime.year || "1998"}</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>EPISODES</Text>
+              <Text style={[styles.statValue, { color: theme.text }]}>{anime.episodes || "26"}</Text>
+              <Text style={styles.statLabel}>STUDIO</Text>
+              <Text style={[styles.statValue, { color: theme.text }]}>{anime.studio || "Sunrise"}</Text>
+            </View>
+          </View>
+
+          {/* Genres badges */}
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Genres</Text>
+          <View style={styles.genreRow}>
+            {["Action", "Award Winning", "Sci-Fi"].map((g, i) => (
+              <View key={i} style={[styles.genreBadge, { backgroundColor: isDarkMode ? "#334155" : "#F1F5F9" }]}>
+                <Text style={[styles.genreText, { color: COLORS.primary }]}>{g}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Synopsis */}
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Synopsis</Text>
+          <Text style={[styles.synopsisText, { color: theme.subText }]}>
+            {anime.synopsis || "Crime is timeless. By the year 2071, humanity has expanded..."}
+            <Text style={{ color: COLORS.primary, fontWeight: "bold" }}> Read more</Text>
+          </Text>
+
+          {/* Rating Section */}
+          <View style={styles.ratingSection}>
+            <Text style={[styles.yourRatingTitle, { color: theme.text }]}>Your Rating</Text>
+            {renderStars()}
+            <Text style={{ color: theme.subText, marginVertical: 10 }}>
+              {userRating > 0 ? `You rated this ${userRating}/5` : "Not rated yet"}
+            </Text>
+            <TouchableOpacity style={[styles.submitBtn, { backgroundColor: userRating > 0 ? COLORS.primary : "#A1A1A1" }]}>
+              <Text style={styles.submitBtnText}>Submit Rating</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ height: 50 }} />
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
-// --- PETITS COMPOSANTS (DESIGN) ---
-
-const InfoBox = ({ label, value }) => (
-    <View style={styles.infoBox}>
-        <Text style={styles.infoLabel}>{label}</Text>
-        <Text style={styles.infoValue} numberOfLines={1}>{value}</Text>
-    </View>
-);
-
-// J'ai ajouté une logique de couleur aléatoire pour les genres, c'est plus joli
-const GenreChip = ({ label }) => {
-    // Petites couleurs pastel aléatoires basées sur le nom
-    const colors = ["#E0F7FA", "#F3E5F5", "#FFF3E0", "#E8F5E9", "#FFEBEE"];
-    const textColors = ["#006064", "#4A148C", "#E65100", "#1B5E20", "#B71C1C"];
-    
-    // Astuce pour avoir toujours la même couleur pour le même genre
-    const index = label.length % colors.length;
-
-    return (
-        <View style={[styles.chip, { backgroundColor: colors[index] }]}>
-            <Text style={[styles.chipText, { color: textColors[index] }]}>{label}</Text>
-        </View>
-    );
-};
-
-// --- STYLES (Identique à ton image) ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF' },
-  headerImage: { width: '100%', height: 350 }, // Image un peu plus haute
-  gradient: { flex: 1, justifyContent: 'space-between', padding: 20, paddingTop: 40 },
-  headerButtons: { flexDirection: 'row', justifyContent: 'space-between' },
-  iconBtn: { backgroundColor: 'rgba(0,0,0,0.3)', padding: 8, borderRadius: 20 },
-  
-  titleContainer: { marginBottom: 20 },
-  animeTitle: { color: '#FFF', fontSize: 28, fontWeight: 'bold', textShadowColor: 'rgba(0,0,0,0.7)', textShadowRadius: 10 },
-  animeSubTitle: { color: '#EEE', fontSize: 16, marginTop: 5, fontWeight: '500' },
-  
-  contentContainer: { 
-      marginTop: -40, 
-      backgroundColor: '#FFF', 
-      borderTopLeftRadius: 30, 
-      borderTopRightRadius: 30, 
-      padding: 24,
-      minHeight: 500
-  },
-  
-  ratingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
-  globalRating: { flexDirection: 'row', alignItems: 'center' },
-  ratingText: { fontSize: 20, fontWeight: 'bold', marginLeft: 6, color: '#2D3436' },
-  voteCount: { fontSize: 14, color: '#B2BEC3', marginLeft: 6 },
-  
-  addListBtn: { 
-      backgroundColor: '#6C63FF', 
-      flexDirection: 'row', 
-      paddingVertical: 10, 
-      paddingHorizontal: 20, 
-      borderRadius: 25, 
-      alignItems: 'center',
-      shadowColor: "#6C63FF",
-      shadowOffset: {width: 0, height: 4},
-      shadowOpacity: 0.3,
-      shadowRadius: 5,
-      elevation: 5
-  },
-  addListText: { color: '#FFF', fontWeight: 'bold', marginLeft: 6, fontSize: 14 },
-
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 25, backgroundColor: '#FAFAFA', borderRadius: 16, padding: 15 },
-  infoBox: { width: '48%', marginBottom: 15 },
-  infoLabel: { fontSize: 12, color: '#B2BEC3', fontWeight: 'bold', marginBottom: 5, textTransform: 'uppercase' },
-  infoValue: { fontSize: 16, color: '#2D3436', fontWeight: '700' },
-
-  section: { marginBottom: 30 },
-  sectionTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 15, color: '#2D3436' },
-  genreContainer: { flexDirection: 'row', flexWrap: 'wrap' },
-  chip: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, marginRight: 10, marginBottom: 10 },
-  chipText: { fontSize: 13, fontWeight: '600' },
-
-  synopsisText: { color: '#636E72', lineHeight: 24, fontSize: 15 },
-  readMore: { color: '#6C63FF', fontWeight: 'bold', marginTop: 8 },
-
-  ratingSection: { marginTop: 10, padding: 25, backgroundColor: '#F8F8FF', borderRadius: 25, alignItems: 'center' },
-  ratingTitle: { fontSize: 18, fontWeight: 'bold', color: '#2D3436', marginBottom: 15 },
-  starsContainer: { flexDirection: 'row', marginBottom: 15 },
-  ratingLabel: { fontSize: 14, color: '#636E72', marginBottom: 20 },
-  submitBtn: { paddingVertical: 14, paddingHorizontal: 50, borderRadius: 30 },
-  submitBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
+  imageContainer: { width: "100%", height: 400 },
+  mainImage: { width: "100%", height: "100%" },
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.4)" },
+  backBtn: { position: "absolute", top: 50, left: 20, backgroundColor: "rgba(0,0,0,0.5)", padding: 8, borderRadius: 20 },
+  headerInfo: { position: "absolute", bottom: 50, left: 20 },
+  headerTitle: { color: "#FFF", fontSize: 28, fontWeight: "bold" },
+  headerJapanese: { color: "#CCC", fontSize: 14 },
+  detailsCard: { marginTop: -30, borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 20 },
+  topRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 25 },
+  globalScore: { flexDirection: "row", alignItems: "center" },
+  scoreText: { fontSize: 20, fontWeight: "bold", marginLeft: 8 },
+  globalLabel: { fontSize: 12, fontWeight: "normal", color: "#888" },
+  addBtn: { backgroundColor: COLORS.primary, flexDirection: "row", paddingHorizontal: 15, paddingVertical: 10, borderRadius: 20, alignItems: "center" },
+  addBtnText: { color: "#FFF", fontWeight: "bold", marginLeft: 5 },
+  statsGrid: { flexDirection: "row", justifyContent: "space-between", marginBottom: 25 },
+  statItem: { width: "45%" },
+  statLabel: { fontSize: 10, color: "#888", marginBottom: 2, fontWeight: "bold" },
+  statValue: { fontSize: 16, fontWeight: "600", marginBottom: 12 },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12, marginTop: 10 },
+  genreRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 20 },
+  genreBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15, marginRight: 8, marginBottom: 8 },
+  genreText: { fontSize: 12, fontWeight: "600" },
+  synopsisText: { fontSize: 14, lineHeight: 22, textAlign: "justify" },
+  ratingSection: { alignItems: "center", marginTop: 30, padding: 20, borderRadius: 20, backgroundColor: "rgba(128,128,128,0.05)" },
+  yourRatingTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 15 },
+  starRow: { flexDirection: "row", marginBottom: 10 },
+  submitBtn: { paddingHorizontal: 40, paddingVertical: 12, borderRadius: 25, marginTop: 10 },
+  submitBtnText: { color: "#FFF", fontWeight: "bold" },
 });
