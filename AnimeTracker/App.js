@@ -14,8 +14,11 @@ import RegisterScreen from "./src/screens/RegisterScreen";
 import SettingsScreen from "./src/screens/SettingScreen";
 import WishlistScreen from "./src/screens/WishlistScreen";
 import DashboardScreen from "./src/screens/DashboardScreen";
+import DashboardStatsScreen from "./src/screens/DashboardStatsScreen";
 import AnimeDetailsScreen from "./src/screens/AnimeDetailsScreen";
 import FavoriteScreen from "./src/screens/FavoriteScreen";
+import AdminUsersScreen from "./src/screens/AdminUserScreen";
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -44,6 +47,7 @@ function Tabs() {
       <Tab.Screen name="Wishlist" component={WishlistScreen} />
       <Tab.Screen name="Favorites" component={FavoriteScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
+      
     </Tab.Navigator>
   );
 }
@@ -71,7 +75,9 @@ export default function App() {
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
             <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            <Stack.Screen name="DashboardStats" component={DashboardStatsScreen} />
             <Stack.Screen name="AnimeDetails" component={AnimeDetailsScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="AdminUsers" component={AdminUsersScreen} />
           </Stack.Navigator>
       </AnimeProvider>
     </AuthProvider>

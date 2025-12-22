@@ -42,6 +42,18 @@ export default function SettingsScreen({ navigation }) {
               📊 Voir le Dashboard
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("DashboardStats")}>
+            <Text style={styles.dashboardButton}>
+              📊 Voir mes analyses
+            </Text>
+          </TouchableOpacity>
+          {user?.role === "admin" && (
+            <TouchableOpacity onPress={() => navigation.navigate("AdminUsers")}>
+              <Text style={styles.dashboardButton}>
+                🛠️ Gestion des utilisateurs
+              </Text>
+            </TouchableOpacity>
+          )}
         </>
       ) : (
         //Si l'utilisateur n'est pas connecté
