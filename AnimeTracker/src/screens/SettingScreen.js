@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useAnime } from "../context/AnimeContext";
 import { useTheme } from "../context/ThemeContext";
 import { COLORS } from "../constants/styles";
+import { sendNotification } from '../services/NotifService';
 
 export default function SettingsScreen({ navigation }) {
     const { user, logout, isAuthenticated } = useAuth();
@@ -12,11 +13,16 @@ export default function SettingsScreen({ navigation }) {
     const { isDarkMode, toggleTheme } = useTheme();
     const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
-    const handleLogout = async () => {
-        resetUserData();
-        await logout();
-    };
-
+   const handleLogout = async () => {
+    try {
+        resetUserData(); // Vide la liste locale d'animés
+        await logout();  // Supprime le token
+        sendNotification("Déconnexion", "À bientôt ! 🚪");
+        navigation.replace("Tabs"); // Redirige proprement
+    } catch (e) {
+        console.log("Erreur logout:", e);
+    }
+};
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
             <Text style={[styles.title, { color: theme.text }]}>Paramètres</Text>

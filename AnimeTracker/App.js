@@ -8,7 +8,8 @@ import { AuthProvider } from "./src/context/AuthContext";
 import { AnimeProvider } from "./src/context/AnimeContext";
 import { ThemeProvider, useTheme } from "./src/context/ThemeContext"; 
 import { COLORS } from "./src/constants/styles"; 
-
+import { useEffect } from 'react';
+import { registerForNotifications } from './src/services/NotifService';
 // Screens
 import HomeScreen from "./src/screens/HomeScreen";
 import LoginScreen from "./src/screens/LoginScreen";
@@ -88,6 +89,10 @@ function AppContent() {
 }
 
 export default function App() {
+ 
+  useEffect(() => {
+    registerForNotifications();
+  }, []);
   return (
     <ThemeProvider>
       <AppContent />

@@ -12,7 +12,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useAnime } from "../context/AnimeContext";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from '../context/AuthContext';
 import { COLORS } from "../constants/styles";
+import { sendNotification } from '../services/NotifService';
 
 const { width } = Dimensions.get("window");
 
@@ -21,18 +23,43 @@ export default function AnimeDetailsScreen({ route, navigation }) {
   const { addToWishlist, startWatching, markAsCompleted } = useAnime();
   const { isDarkMode } = useTheme();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
-  
+  const { isAuthenticated } = useAuth();
   const [userRating, setUserRating] = useState(0);
 
-  const handleAddToList = () => {
+const handleAddToList = () => {
+    // 1. On vérifie d'abord si l'utilisateur est connecté
+    if (!isAuthenticated) {
+      Alert.alert(
+        "Connexion requise",
+        "Vous devez être connecté pour ajouter un animé à votre liste.",
+        [
+          { text: "Se connecter", onPress: () => navigation.navigate("Login") },
+          { text: "Annuler", style: "cancel" }
+        ]
+      );
+      return; // ON S'ARRÊTE ICI : Pas de notif, pas d'appel API
+    }
+
+    // 2. Si on est connecté, on propose le choix
     Alert.alert(
-      "Add to List",
-      "Choose a destination for this anime:",
+      "Ajouter à une liste",
+      "Où voulez-vous placer cet animé ?",
       [
-        { text: "Watchlist (En cours)", onPress: () => startWatching(anime.malId || anime.id) },
-        { text: "Wishlist (À voir)", onPress: () => addToWishlist(anime.malId || anime.id) },
-        { text: "Completed (Terminé)", onPress: () => markAsCompleted(anime.malId || anime.id) },
-        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Watchlist", 
+          onPress: async () => {
+            const success = await startWatching(anime.malId || anime.id);
+            if (success) sendNotification("Watchlist mise à jour ! 📺", `${anime.title} ajouté.`);
+          } 
+        },
+        { 
+          text: "Wishlist", 
+          onPress: async () => {
+            const success = await addToWishlist(anime.malId || anime.id);
+            if (success) sendNotification("Wishlist mise à jour ! ✨", `${anime.title} ajouté.`);
+          } 
+        },
+        { text: "Annuler", style: "cancel" },
       ]
     );
   };

@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator 
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext"; 
 import { COLORS } from "../constants/styles";
+import { sendNotification } from '../services/NotifService';
 
 const LoginScreen = ({ navigation, route }) => {
   const { login } = useAuth();
@@ -21,6 +22,7 @@ const LoginScreen = ({ navigation, route }) => {
     setSubmitting(true);
     try {
       await login(email.trim(), password);
+      sendNotification("Bienvenue ! 👋", "Connexion réussie sur AnimeTracker.");
       navigation.replace("Tabs");
     } catch (e) {
       console.log("Login error:", e.response?.data || e.message);

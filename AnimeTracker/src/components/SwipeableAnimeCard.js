@@ -50,7 +50,7 @@ export default function SwipeableAnimeCard({ item, onToggleFavorite, onAddToWish
       ) : onDelete ? (
         <TouchableOpacity
           style={[styles.backBtn, styles.backBtnRight]}
-          onPress={() => onDelete(data.item.id)}
+          onPress={() => onDelete(item)}
         >
           <Ionicons name="trash-outline" size={25} color="white" />
           <Text style={styles.backBtnText}>Supprimer</Text>
