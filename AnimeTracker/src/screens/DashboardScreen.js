@@ -1,14 +1,18 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
+
+// Composants Graphiques
 import EpisodeDistributionChart from "../components/EpisodeDistributionChart";
 import ScoreDistributionChart from "../components/ScoreDistributionChart";
-import GenrePieChart from "../components/GenrePieChart";
 import ScoreComparisonChart from "../components/ScoreComparisonChart";
-import { useAnime } from "../context/AnimeContext";
-import { useTheme } from "../context/ThemeContext"; // Import du thème
-import { COLORS } from "../constants/styles";
 import StudioChart from "../components/StudioChart";
 import YearChart from "../components/YearChart";
+// J'ai ajouté cet import car il était utilisé dans le code mais manquant en haut
+import GenrePieChart from "../components/GenrePieChart"; 
+
+import { useAnime } from "../context/AnimeContext";
+import { useTheme } from "../context/ThemeContext";
+import { COLORS } from "../constants/styles";
 
 export default function DashboardScreen() {
   const { animeData, genreData, scoreData, loadingAnalytics } = useAnime();
@@ -21,7 +25,7 @@ export default function DashboardScreen() {
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
       <Text style={[styles.title, { color: theme.text }]}>Dashboard</Text>
 
-      {/* On passe le thème ou isDarkMode à chaque graphique pour qu'ils adaptent leurs couleurs internes */}
+      {/* Graphiques Généraux (Stats globales) */}
       <EpisodeDistributionChart data={animeData} theme={theme} isDarkMode={isDarkMode} />
 
       <ScoreDistributionChart data={animeData} theme={theme} isDarkMode={isDarkMode} />
@@ -30,7 +34,8 @@ export default function DashboardScreen() {
 
       <StudioChart data={animeData} theme={theme} isDarkMode={isDarkMode} />
 
-      <Text style={[styles.sectionTitle, { color: theme.subText }]}>
+      {/* --- Section "Mes Analyses" (Fusionnée depuis HEAD) --- */}
+      <Text style={[styles.sectionTitle, { color: theme.subText || theme.text }]}>
         Mes Analyses
       </Text>
 
@@ -42,14 +47,17 @@ export default function DashboardScreen() {
         />
       ) : (
         <>
+           {/* On affiche le PieChart des genres */}
            <GenrePieChart data={genreData} theme={theme} isDarkMode={isDarkMode} />
            
+           {/* On affiche la comparaison des scores si les données existent */}
            {scoreData && (
              <ScoreComparisonChart data={scoreData} theme={theme} isDarkMode={isDarkMode} />
            )}
         </>
       )}
 
+      {/* Espace en bas pour le scroll */}
       <View style={{ height: 60 }} />
     </ScrollView>
   );
@@ -67,9 +75,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     marginTop: 30,
     marginBottom: 15,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });
