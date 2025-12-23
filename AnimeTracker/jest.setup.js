@@ -19,7 +19,7 @@ jest.mock('@react-navigation/native', () => {
       dispatch: jest.fn(),
       goBack: jest.fn(),
       setOptions: jest.fn(),
-      addListener: jest.fn(() => () => {}),
+      addListener: jest.fn(() => () => { }),
     }),
     useRoute: () => ({
       params: { anime: { id: 1, title: 'Cowboy Bebop' } },
@@ -53,6 +53,30 @@ jest.mock('react-native-gifted-charts', () => ({
 
 jest.mock('react-native-swipe-list-view', () => ({
   SwipeListView: 'SwipeListView',
+}));
+
+// Mock expo-notifications (évite les erreurs de permissions)
+jest.mock('expo-notifications', () => ({
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+  getExpoPushTokenAsync: jest.fn(() => Promise.resolve({ data: 'mock-token' })),
+  setNotificationHandler: jest.fn(),
+  addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+}));
+
+// Mock expo-linear-gradient
+jest.mock('expo-linear-gradient', () => ({
+  LinearGradient: 'LinearGradient',
+}));
+
+// Mock axios/client pour les appels API
+jest.mock('./src/api/Clients', () => ({
+  __esModule: true,
+  default: {
+    get: jest.fn(() => Promise.resolve({ data: { data: [] } })),
+    post: jest.fn(() => Promise.resolve({ data: {} })),
+  },
 }));
 
 // Polyfills pour React 19 / Expo
