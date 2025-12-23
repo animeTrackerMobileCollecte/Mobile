@@ -14,12 +14,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
-// Contexts
+
 import { useAnime } from "../context/AnimeContext";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from '../context/AuthContext';
 
-// Constants & Services
+
 import { COLORS } from "../constants/styles";
 import { sendNotification } from '../services/NotifService';
 
@@ -33,18 +33,14 @@ export default function AnimeDetailsScreen() {
   const { isDarkMode } = useTheme();
   const { isAuthenticated } = useAuth();
 
-  // --- COULEURS DYNAMIQUES (Dark Mode) ---
+  
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
   
-  // Fond principal (Blanc ou Noir)
+  
   const mainBgColor = isDarkMode ? "#121212" : "#FFF";
-  // Fond de la carte arrondie (Blanc ou Gris très foncé)
   const contentBgColor = isDarkMode ? "#1E1E1E" : "#FFF";
-  // Fond de la grille de stats (Gris clair ou Gris moyen)
   const statsGridColor = isDarkMode ? "#2C2C2C" : "#F6F7FB";
-  // Couleur du texte principal
   const textColor = isDarkMode ? "#FFF" : "#111";
-  // Couleur du texte secondaire
   const subTextColor = isDarkMode ? "#AAA" : "#6B7280";
 
   const { anime } = route.params || {};
@@ -63,7 +59,7 @@ export default function AnimeDetailsScreen() {
     );
   }
 
-  // --- LOGIQUE AJOUT LISTE ---
+  
   const handleAddToList = () => {
     if (!isAuthenticated) {
       Alert.alert(
@@ -100,7 +96,7 @@ export default function AnimeDetailsScreen() {
     );
   };
 
-  // --- LOGIQUE NOTATION ---
+ 
   const handleStarPress = (starIndex) => setRating(starIndex);
 
   const handleSubmitRating = async () => {
@@ -110,7 +106,7 @@ export default function AnimeDetailsScreen() {
     }
     if (rating > 0) {
       await rateAnime(anime.malId || anime.id, rating);
-      // L'alerte est gérée dans le Context
+      
     }
   };
 
@@ -119,7 +115,7 @@ export default function AnimeDetailsScreen() {
       <StatusBar barStyle="light-content" />
       <ScrollView style={[styles.container, { backgroundColor: mainBgColor }]} showsVerticalScrollIndicator={false}>
         
-        {/* IMAGE HEADER */}
+        
         <ImageBackground
           source={{ uri: anime.imageUrl || anime.image || "https://via.placeholder.com/400" }}
           style={styles.headerImage}
@@ -143,10 +139,10 @@ export default function AnimeDetailsScreen() {
           </LinearGradient>
         </ImageBackground>
 
-        {/* --- CONTENU (Carte arrondie) --- */}
+        
         <View style={[styles.contentContainer, { backgroundColor: contentBgColor }]}>
           
-          {/* NOTE GLOBALE */}
+          
           <View style={styles.ratingRow}>
             <View style={styles.globalRating}>
               <Ionicons name="star" size={20} color="#FFD700" />
@@ -166,7 +162,7 @@ export default function AnimeDetailsScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* GRID INFOS (Année, Studio...) */}
+          
           <View style={[styles.statsGrid, { backgroundColor: statsGridColor }]}>
             <InfoBox label="STATUS" value={anime.status || anime.publicationStatus || "Unknown"} textColor={textColor} subTextColor={subTextColor} />
             <InfoBox label="EPISODES" value={anime.episodes ? String(anime.episodes) : "?"} textColor={textColor} subTextColor={subTextColor} />
@@ -174,7 +170,7 @@ export default function AnimeDetailsScreen() {
             <InfoBox label="STUDIO" value={anime.studio || "Unknown"} textColor={textColor} subTextColor={subTextColor} />
           </View>
 
-          {/* GENRES */}
+          
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: textColor }]}>Genres</Text>
             <View style={styles.genreContainer}>
@@ -183,7 +179,7 @@ export default function AnimeDetailsScreen() {
                   <GenreChip 
                     key={index} 
                     label={typeof genreName === 'string' ? genreName : genreName.name} 
-                    isDarkMode={isDarkMode} // On passe le mode sombre au chip
+                    isDarkMode={isDarkMode} 
                   />
                 ))
               ) : (
@@ -192,7 +188,7 @@ export default function AnimeDetailsScreen() {
             </View>
           </View>
 
-          {/* SYNOPSIS */}
+          
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: textColor }]}>Synopsis</Text>
             <Text
@@ -210,7 +206,7 @@ export default function AnimeDetailsScreen() {
             )}
           </View>
 
-          {/* NOTATION */}
+          
           <View style={styles.ratingSection}>
             <Text style={[styles.ratingTitle, { color: textColor }]}>Your Rating</Text>
 
@@ -250,7 +246,7 @@ export default function AnimeDetailsScreen() {
   );
 }
 
-// --- PETITS COMPOSANTS ---
+
 
 const InfoBox = ({ label, value, textColor, subTextColor }) => (
   <View style={styles.infoBox}>
@@ -262,7 +258,7 @@ const InfoBox = ({ label, value, textColor, subTextColor }) => (
 );
 
 const GenreChip = ({ label, isDarkMode }) => {
-  // Couleurs adaptées au mode sombre
+  
   const colors = isDarkMode 
     ? ["#374151", "#1F2937", "#4B5563", "#334155", "#111827"] 
     : ["#E0F7FA", "#F3E5F5", "#FFF3E0", "#E8F5E9", "#FFEBEE"];
@@ -280,7 +276,7 @@ const GenreChip = ({ label, isDarkMode }) => {
   );
 };
 
-// --- STYLES ---
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   centerContainer: { flex: 1, justifyContent: "center", alignItems: "center" },

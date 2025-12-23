@@ -11,7 +11,7 @@ export default function TopRatedChart({ animeData }) {
     const top = useMemo(() => {
         const arr = Array.isArray(animeData) ? animeData : [];
 
-        // On tente de récupérer la note utilisateur d’une manière robuste
+       
         const scored = arr
         .map((a) => {
             const rating =

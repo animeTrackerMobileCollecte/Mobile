@@ -9,12 +9,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-
-// Imports de tes constantes et contextes
 import { globalStyles, COLORS } from "../constants/styles";
 import { useAuth } from "../context/AuthContext";
 import { useAnime } from "../context/AnimeContext";
-import { useTheme } from "../context/ThemeContext"; // Ajouté
+import { useTheme } from "../context/ThemeContext"; 
 import SwipeableAnimeCard from "../components/SwipeableAnimeCard";
 
 const Header = ({ isAuthenticated, navigation, theme }) => (
@@ -48,7 +46,7 @@ const Tabs = ({ activeTab, setActiveTab, theme }) => {
             globalStyles.tabButton,
             activeTab === tabName 
               ? globalStyles.activeTab 
-              : { backgroundColor: theme.card } // Utilise la couleur de carte pour les onglets inactifs
+              : { backgroundColor: theme.card } 
           ]}
           onPress={() => setActiveTab(tabName)}
         >
@@ -76,10 +74,10 @@ export default function HomeScreen() {
     startWatching,
     markAsCompleted,
     toggleFavorite,
-    removeFromWishlist, // Ajouté car utilisé dans ton renderItem
+    removeFromWishlist, 
   } = useAnime();
 
-  // Thème
+ 
   const { isDarkMode } = useTheme();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
@@ -87,8 +85,6 @@ export default function HomeScreen() {
   const [animeList, setAnimeList] = useState([]);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("Tous");
-
-  // États pour la pagination (Infinite Scroll)
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);

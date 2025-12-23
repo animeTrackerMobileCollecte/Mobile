@@ -10,7 +10,7 @@ export default function DashboardStatsScreen() {
   const safeGenreData = Array.isArray(genreData) ? genreData : [];
   const yearNow = new Date().getFullYear();
 
-// GENRES (déplacé depuis Dashboard 1)
+
 const genreChart = useMemo(() => {
   const normalized = safeGenreData
     .map((g) => {
@@ -38,7 +38,7 @@ const genreChart = useMemo(() => {
   return { pieData, total };
 }, [safeGenreData, safeAnimeData]);
 
-  // STATUS (completed/ongoing/wishlist)
+  
 
   const statusCounts = useMemo(() => {
     const counts = { completed: 0, ongoing: 0, wishlist: 0 };
@@ -48,7 +48,7 @@ const genreChart = useMemo(() => {
       if (s === "completed") counts.completed += 1;
       else if (s === "ongoing") counts.ongoing += 1;
       else if (s === "wishlist") counts.wishlist += 1;
-      else if (a?.isInWishlist === true) counts.wishlist += 1; // fallback
+      else if (a?.isInWishlist === true) counts.wishlist += 1; 
     });
 
     return counts;
@@ -71,7 +71,7 @@ const genreChart = useMemo(() => {
   }, [statusCounts]);
 
 
-  // DÉCENNIES (uniquement vu/en cours)
+  
 
   const decadeBars = useMemo(() => {
     const ranges = [
@@ -105,7 +105,7 @@ const genreChart = useMemo(() => {
 
   const totalDecade = decadeBars.reduce((acc, b) => acc + (b.value || 0), 0);
 
-  // TOP 5 “mes animés les mieux notés”
+  
 
   const topRatedBars = useMemo(() => {
     const rated = safeAnimeData
@@ -142,7 +142,7 @@ const genreChart = useMemo(() => {
         <ActivityIndicator size="large" style={{ marginTop: 20 }} />
       ) : (
         <>
-          {/* GENRES (déplacé depuis Dashboard 1) */}
+          
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Mes Genres Préférés</Text>
             <Text style={styles.cardDescription}>
@@ -242,7 +242,7 @@ const genreChart = useMemo(() => {
             )}
           </View>
 
-          {/* DÉCENNIES (vu/en cours uniquement) */}
+          
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Répartition des Animés par Décennie</Text>
             <Text style={styles.cardDescription}>

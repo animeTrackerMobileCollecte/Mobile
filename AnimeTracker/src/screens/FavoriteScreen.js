@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { globalStyles, COLORS } from '../constants/styles';
 import SwipeableAnimeCard from '../components/SwipeableAnimeCard';
 import { useAnime } from '../context/AnimeContext';
-import { useTheme } from '../context/ThemeContext'; // Import Thème
+import { useTheme } from '../context/ThemeContext'; 
 
 export default function FavoriteScreen() {
     const { 

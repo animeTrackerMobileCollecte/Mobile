@@ -15,10 +15,10 @@ export default function SettingsScreen({ navigation }) {
 
    const handleLogout = async () => {
     try {
-        resetUserData(); // Vide la liste locale d'animés
-        await logout();  // Supprime le token
-        sendNotification("Déconnexion", "À bientôt ! 🚪");
-        navigation.replace("Tabs"); // Redirige proprement
+        resetUserData(); 
+        await logout();  
+        sendNotification("Déconnexion", "À bientôt !");
+        navigation.replace("Tabs"); 
     } catch (e) {
         console.log("Erreur logout:", e);
     }
@@ -27,7 +27,7 @@ export default function SettingsScreen({ navigation }) {
         <View style={[styles.container, { backgroundColor: theme.background }]}>
             <Text style={[styles.title, { color: theme.text }]}>Paramètres</Text>
 
-            {/* BLOC DARK MODE */}
+            
             <View style={[styles.settingRow, { borderBottomColor: theme.border }]}>
                 <Text style={[styles.settingLabel, { color: theme.text }]}>Mode Sombre</Text>
                 <Switch
@@ -56,7 +56,7 @@ export default function SettingsScreen({ navigation }) {
                         <Text style={styles.logoutText}>Se déconnecter</Text>
                     </TouchableOpacity>
 
-                    {/* BOUTONS NAVIGATION DÉTAILLÉS */}
+                   
                     <TouchableOpacity 
                         style={[styles.dashboardButton, { backgroundColor: theme.card, borderColor: theme.border, borderWidth: 1 }]} 
                         onPress={() => navigation.navigate("Dashboard")}

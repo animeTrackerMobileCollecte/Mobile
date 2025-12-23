@@ -7,19 +7,18 @@ const { width } = Dimensions.get("window");
 
 export default function ScoreDistributionChart({ data, theme, isDarkMode }) {
   
-  // Calcul des données (Mémorisé pour la performance)
+  
   const chartData = useMemo(() => {
-    // 1. Initialiser les compteurs pour les notes de 1 à 5
+    
     const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     let hasData = false;
 
-    // 2. Parcourir les animés pour compter les notes personnelles
+    
     if (Array.isArray(data)) {
       data.forEach((anime) => {
-        // On récupère la note personnelle (ajoutée dans le Context)
         const score = Number(anime.personalScore);
 
-        // Si la note est valide (entre 1 et 5)
+        
         if (score >= 1 && score <= 5) {
           counts[score] += 1;
           hasData = true;
@@ -27,17 +26,16 @@ export default function ScoreDistributionChart({ data, theme, isDarkMode }) {
       });
     }
 
-    // 3. Formater pour le graphique (BarChart)
-    // On crée une barre pour chaque étoile (1★ à 5★)
+    
     const formattedData = [
-      { label: "1★", value: counts[1], frontColor: "#ef4444" }, // Rouge
-      { label: "2★", value: counts[2], frontColor: "#f97316" }, // Orange
-      { label: "3★", value: counts[3], frontColor: "#eab308" }, // Jaune
-      { label: "4★", value: counts[4], frontColor: "#84cc16" }, // Vert clair
-      { label: "5★", value: counts[5], frontColor: "#22c55e" }, // Vert foncé
+      { label: "1★", value: counts[1], frontColor: "#ef4444" }, 
+      { label: "2★", value: counts[2], frontColor: "#f97316" }, 
+      { label: "3★", value: counts[3], frontColor: "#eab308" }, 
+      { label: "4★", value: counts[4], frontColor: "#84cc16" }, 
+      { label: "5★", value: counts[5], frontColor: "#22c55e" }, 
     ];
 
-    // On ajoute un petit label au-dessus de la barre si la valeur > 0
+    
     return {
       data: formattedData.map(item => ({
         ...item,
@@ -53,7 +51,7 @@ export default function ScoreDistributionChart({ data, theme, isDarkMode }) {
     };
   }, [data, theme]);
 
-  // --- RENDU ---
+  
 
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -88,7 +86,7 @@ export default function ScoreDistributionChart({ data, theme, isDarkMode }) {
             yAxisTextStyle={{ color: theme.subText, fontSize: 10 }}
             xAxisLabelTextStyle={{ color: theme.text, fontSize: 12 }}
             height={180}
-            width={width - 80} // Ajustement largeur
+            width={width - 80} 
             isAnimated
           />
         </View>
@@ -103,8 +101,8 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 15,
     borderWidth: 1,
-    elevation: 2, // Ombre Android
-    shadowColor: "#000", // Ombre iOS
+    elevation: 2, 
+    shadowColor: "#000", 
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,

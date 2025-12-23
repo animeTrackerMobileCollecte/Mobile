@@ -7,18 +7,18 @@ import { useAnime } from '../context/AnimeContext';
 import { useTheme } from '../context/ThemeContext';
 
 export default function WatchlistScreen() {
-    // 1. On récupère markAsCompleted pour pouvoir finir un animé depuis cette liste
+    
     const { animeData, removeFromWishlist, markAsCompleted,OnStartWatching, toggleFavorite } = useAnime();
     const { isDarkMode } = useTheme();
     const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
-    // 2. Filtrer par le statut 'ongoing' (En cours)
+    
     const watchlistAnimes = animeData.filter(anime => anime.status === 'ongoing');
 
     return (
         <View style={[globalStyles.container, { backgroundColor: theme.background }]}>
             
-            {/* Header fixe */}
+            
             <View style={globalStyles.header}>
                 <Text style={[globalStyles.headerTitle, { color: theme.text }]}>Ma Watchlist 📺</Text>
             </View>
@@ -28,7 +28,7 @@ export default function WatchlistScreen() {
                 keyExtractor={item => item.malId.toString()}
                 contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
                 
-                // On met tout ce qui était en haut dans le Header de la FlatList
+                
                 ListHeaderComponent={() => (
                     <View>
                         <View style={[globalStyles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border, borderWidth: 1 }]}>

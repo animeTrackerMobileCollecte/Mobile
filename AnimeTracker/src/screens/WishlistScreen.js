@@ -21,7 +21,7 @@ export default function WishlistScreen() {
     <View
       style={[globalStyles.container, { backgroundColor: theme.background }]}
     >
-      {/* Header */}
+     
       <View style={globalStyles.header}>
         <Text style={[globalStyles.headerTitle, { color: theme.text }]}>
           Ma Wishlist 📚
@@ -34,7 +34,7 @@ export default function WishlistScreen() {
         contentContainerStyle={{ paddingBottom: 100 }}
         ListHeaderComponent={() => (
           <>
-            {/* Barre de recherche (Placeholder visuel ici) */}
+            
             <View
               style={[
                 globalStyles.searchContainer,
@@ -83,7 +83,7 @@ export default function WishlistScreen() {
             item={item}
             onToggleFavorite={toggleFavorite}
             onStartWatching={startWatching}
-            onDelete={() => removeFromWishlist(item)} // On passe l'objet complet ici
+            onDelete={() => removeFromWishlist(item)} 
           />
         )}
         ListEmptyComponent={() => (

@@ -1,13 +1,12 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 
-// Composants Graphiques
+
 import EpisodeDistributionChart from "../components/EpisodeDistributionChart";
 import ScoreDistributionChart from "../components/ScoreDistributionChart";
 import ScoreComparisonChart from "../components/ScoreComparisonChart";
 import StudioChart from "../components/StudioChart";
 import YearChart from "../components/YearChart";
-// J'ai ajouté cet import car il était utilisé dans le code mais manquant en haut
 import GenrePieChart from "../components/GenrePieChart"; 
 
 import { useAnime } from "../context/AnimeContext";
@@ -17,7 +16,7 @@ import { COLORS } from "../constants/styles";
 export default function DashboardScreen() {
   const { animeData, genreData, scoreData, loadingAnalytics } = useAnime();
   
-  // Récupération du thème
+  
   const { isDarkMode } = useTheme();
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
 
@@ -25,7 +24,6 @@ export default function DashboardScreen() {
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
       <Text style={[styles.title, { color: theme.text }]}>Dashboard</Text>
 
-      {/* Graphiques Généraux (Stats globales) */}
       <EpisodeDistributionChart data={animeData} theme={theme} isDarkMode={isDarkMode} />
 
       <ScoreDistributionChart data={animeData} theme={theme} isDarkMode={isDarkMode} />
@@ -34,7 +32,7 @@ export default function DashboardScreen() {
 
       <StudioChart data={animeData} theme={theme} isDarkMode={isDarkMode} />
 
-      {/* --- Section "Mes Analyses" (Fusionnée depuis HEAD) --- */}
+      
       <Text style={[styles.sectionTitle, { color: theme.subText || theme.text }]}>
         Mes Analyses
       </Text>
@@ -47,17 +45,17 @@ export default function DashboardScreen() {
         />
       ) : (
         <>
-           {/* On affiche le PieChart des genres */}
+           
            <GenrePieChart data={genreData} theme={theme} isDarkMode={isDarkMode} />
            
-           {/* On affiche la comparaison des scores si les données existent */}
+          
            {scoreData && (
              <ScoreComparisonChart data={scoreData} theme={theme} isDarkMode={isDarkMode} />
            )}
         </>
       )}
 
-      {/* Espace en bas pour le scroll */}
+     
       <View style={{ height: 60 }} />
     </ScrollView>
   );

@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const systemColorScheme = useColorScheme(); // Détecte le mode du téléphone
+  const systemColorScheme = useColorScheme();
   const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark');
 
   useEffect(() => {

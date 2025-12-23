@@ -10,16 +10,15 @@ export const AnimeProvider = ({ children }) => {
   const { token, isAuthenticated } = useAuth();
   const navigation = useNavigation();
   
-  // États de base
   const [animeData, setAnimeData] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // États pour les graphiques (Analyses)
+ 
   const [genreData, setGenreData] = useState([]);
   const [scoreData, setScoreData] = useState(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(true);
 
-  // Vérification de connexion
+  
   const checkAuth = () => {
     if (!isAuthenticated && !token) { 
         Alert.alert(
@@ -40,20 +39,20 @@ export const AnimeProvider = ({ children }) => {
     console.log("Données utilisateur réinitialisées");
   };
 
-  // --- FONCTION DE CHARGEMENT PRINCIPALE ---
+  
   const fetchAnimesFromAPI = async () => {
     setLoading(true);
     if (isAuthenticated) setLoadingAnalytics(true);
 
     try {
-      // 1. Récupérer la liste de TOUS les animés (Base de données)
+      
       const allRes = await client.get("/animeList");
       const allAnimes = allRes.data.data;
       
       let watchIds = [], wishIds = [], compIds = [], favIds = [];
-      let myRatingsMap = {}; // Pour stocker les notes perso : { "ID_ANIME": NOTE }
+      let myRatingsMap = {};
 
-      // 2. Si l'utilisateur est connecté, récupérer SES données
+      
       if (isAuthenticated && token) {
         try {
             const [watch, wish, comp, fav, genresRes, scoresRes, ratingsRes] = await Promise.all([
@@ -63,7 +62,7 @@ export const AnimeProvider = ({ children }) => {
                 client.get("/lists/favorites"),
                 client.get("/analysis/genres"),
                 client.get("/analysis/scores"),
-                client.get("/ratings/user") // <-- On récupère les notes
+                client.get("/ratings/user") 
             ]);
 
             watchIds = watch.data.map(i => String(i.animeId));
@@ -71,16 +70,15 @@ export const AnimeProvider = ({ children }) => {
             compIds = comp.data.map(i => String(i.animeId));
             favIds = fav.data.map(i => String(i.animeId));
 
-            // Mapping des notes pour accès rapide
+            
             if (ratingsRes.data && Array.isArray(ratingsRes.data)) {
                 ratingsRes.data.forEach(r => {
-                    // On gère les deux cas possibles : 'score' ou 'rating'
                     const val = r.score !== undefined ? r.score : r.rating;
                     myRatingsMap[String(r.animeId)] = Number(val);
                 });
             }
 
-            // Mise à jour des états pour les graphiques
+            
             setGenreData(genresRes.data); 
             setScoreData(scoresRes.data);
 
@@ -89,7 +87,7 @@ export const AnimeProvider = ({ children }) => {
         }
       }
 
-      // 3. Fusionner les infos globales avec les infos utilisateur
+      
       const merged = allAnimes.map(anime => {
         const curId = String(anime.malId);
         let status = null;
@@ -97,7 +95,7 @@ export const AnimeProvider = ({ children }) => {
         else if (compIds.includes(curId)) status = 'completed';
         else if (wishIds.includes(curId)) status = 'wishlist';
 
-        // On récupère la note perso depuis la map, ou 0 si pas noté
+        
         const pScore = myRatingsMap[curId] ? Number(myRatingsMap[curId]) : 0;
 
         return {
@@ -106,7 +104,7 @@ export const AnimeProvider = ({ children }) => {
           status: status,
           isInWishlist: wishIds.includes(curId),
           isFavorite: favIds.includes(curId),
-          personalScore: pScore, // <--- Donnée pour le graphique "Top Rated"
+          personalScore: pScore, 
         };
       });
       
@@ -120,14 +118,14 @@ export const AnimeProvider = ({ children }) => {
     }
   };
 
-  // Helper pour mettre à jour le statut
+  
   const sendStatusUpdate = async (animeId, status, isFavorite) => {
     const body = { animeId: parseInt(animeId), listType: status };
     if (typeof isFavorite === 'boolean') body.isFavorite = isFavorite;
     return await client.post('/lists/status', body);
   };
 
-  // --- ACTIONS UTILISATEUR ---
+ 
 
   const startWatching = async (malId) => {
     if (!checkAuth()) return false;
@@ -176,14 +174,14 @@ export const AnimeProvider = ({ children }) => {
     fetchAnimesFromAPI();
   };
 
-  // --- FONCTION NOTATION AVEC ALERTE DE SUCCÈS ---
+  
   const rateAnime = async (animeId, rating) => {
     if (!checkAuth()) return false;
 
     try {
         console.log(`Envoi de la note ${rating} pour l'anime ${animeId}...`);
         
-        // On envoie 'score' car c'est ce que le backend attend
+        
         const response = await client.post('/ratings', { 
             animeId: String(animeId), 
             score: Number(rating) 
@@ -192,10 +190,10 @@ export const AnimeProvider = ({ children }) => {
         if (response.status === 200 || response.status === 201) {
             console.log("Note enregistrée ! Mise à jour...");
             
-            // 1. Rechargement immédiat des données
+            
             await fetchAnimesFromAPI(); 
             
-            // 2. Alerte de succès pour l'utilisateur
+            
             Alert.alert(
                 "Succès", 
                 `Votre note de ${rating}/5 a bien été enregistrée !`
