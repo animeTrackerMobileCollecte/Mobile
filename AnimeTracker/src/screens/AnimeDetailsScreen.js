@@ -29,27 +29,32 @@ export default function AnimeDetailsScreen() {
   const navigation = useNavigation();
   const route = useRoute();
 
-  // On récupère tout ce dont on a besoin des deux versions
   const { addToWishlist, startWatching, rateAnime } = useAnime();
   const { isDarkMode } = useTheme();
   const { isAuthenticated } = useAuth();
 
-  // Adaptation du thème
+  // --- COULEURS DYNAMIQUES (Dark Mode) ---
   const theme = isDarkMode ? COLORS.dark : COLORS.light;
-  const backgroundColor = isDarkMode ? "#1A1A1A" : "#FFF";
+  
+  // Fond principal (Blanc ou Noir)
+  const mainBgColor = isDarkMode ? "#121212" : "#FFF";
+  // Fond de la carte arrondie (Blanc ou Gris très foncé)
+  const contentBgColor = isDarkMode ? "#1E1E1E" : "#FFF";
+  // Fond de la grille de stats (Gris clair ou Gris moyen)
+  const statsGridColor = isDarkMode ? "#2C2C2C" : "#F6F7FB";
+  // Couleur du texte principal
   const textColor = isDarkMode ? "#FFF" : "#111";
-  const cardColor = isDarkMode ? "#2A2A2A" : "#F6F7FB";
+  // Couleur du texte secondaire
+  const subTextColor = isDarkMode ? "#AAA" : "#6B7280";
 
   const { anime } = route.params || {};
 
-  // --- ÉTATS LOCAUX ---
   const [rating, setRating] = useState(anime?.personalScore ? anime.personalScore : 0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  // SÉCURITÉ : si pas d'anime
   if (!anime) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor }]}>
+      <View style={[styles.centerContainer, { backgroundColor: mainBgColor }]}>
         <Text style={{ color: textColor }}>Erreur : Impossible de charger les détails.</Text>
         <TouchableOpacity style={styles.backButtonSimple} onPress={() => navigation.goBack()}>
             <Text style={{color: '#FFF'}}>Retour</Text>
@@ -58,9 +63,8 @@ export default function AnimeDetailsScreen() {
     );
   }
 
-  // --- LOGIQUE (Venue de la branche dev) ---
+  // --- LOGIQUE AJOUT LISTE ---
   const handleAddToList = () => {
-    // 1. Vérification Auth
     if (!isAuthenticated) {
       Alert.alert(
         "Connexion requise",
@@ -73,7 +77,6 @@ export default function AnimeDetailsScreen() {
       return;
     }
 
-    // 2. Choix de la liste
     Alert.alert(
       "Ajouter à une liste",
       "Où voulez-vous placer cet animé ?",
@@ -97,10 +100,8 @@ export default function AnimeDetailsScreen() {
     );
   };
 
-  // --- LOGIQUE NOTATION (Venue de nassim2) ---
-  const handleStarPress = (starIndex) => {
-    setRating(starIndex);
-  };
+  // --- LOGIQUE NOTATION ---
+  const handleStarPress = (starIndex) => setRating(starIndex);
 
   const handleSubmitRating = async () => {
     if (!isAuthenticated) {
@@ -109,16 +110,16 @@ export default function AnimeDetailsScreen() {
     }
     if (rating > 0) {
       await rateAnime(anime.malId || anime.id, rating);
-      Alert.alert("Succès", "Votre note a été enregistrée !");
+      // L'alerte est gérée dans le Context
     }
   };
 
   return (
     <>
       <StatusBar barStyle="light-content" />
-      <ScrollView style={[styles.container, { backgroundColor }]} showsVerticalScrollIndicator={false}>
+      <ScrollView style={[styles.container, { backgroundColor: mainBgColor }]} showsVerticalScrollIndicator={false}>
         
-        {/* --- HEADER IMAGE (Design nassim2) --- */}
+        {/* IMAGE HEADER */}
         <ImageBackground
           source={{ uri: anime.imageUrl || anime.image || "https://via.placeholder.com/400" }}
           style={styles.headerImage}
@@ -127,17 +128,12 @@ export default function AnimeDetailsScreen() {
             colors={["rgba(0,0,0,0.1)", "rgba(0,0,0,0.9)"]}
             style={styles.gradient}
           >
-            {/* Header Buttons */}
             <View style={styles.headerButtons}>
               <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
                 <Ionicons name="arrow-back" size={24} color="#FFF" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconBtn}>
-                <Ionicons name="ellipsis-vertical" size={24} color="#FFF" />
-              </TouchableOpacity>
             </View>
 
-            {/* TITRES */}
             <View style={styles.titleContainer}>
               <Text style={styles.animeTitle}>{anime.title}</Text>
               <Text style={styles.animeSubTitle}>
@@ -147,10 +143,10 @@ export default function AnimeDetailsScreen() {
           </LinearGradient>
         </ImageBackground>
 
-        {/* --- CONTENU (Design nassim2 + Logique dev) --- */}
-        <View style={[styles.contentContainer, { backgroundColor }]}>
+        {/* --- CONTENU (Carte arrondie) --- */}
+        <View style={[styles.contentContainer, { backgroundColor: contentBgColor }]}>
           
-          {/* LIGNE : NOTE GLOBALE + BOUTON AJOUT */}
+          {/* NOTE GLOBALE */}
           <View style={styles.ratingRow}>
             <View style={styles.globalRating}>
               <Ionicons name="star" size={20} color="#FFD700" />
@@ -160,7 +156,6 @@ export default function AnimeDetailsScreen() {
               <Text style={styles.voteCount}>(Global)</Text>
             </View>
 
-            {/* BOUTON AVEC LOGIQUE handleAddToList */}
             <TouchableOpacity
               style={styles.addListBtn}
               activeOpacity={0.9}
@@ -171,21 +166,25 @@ export default function AnimeDetailsScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* --- GRID D'INFOS --- */}
-          <View style={[styles.statsGrid, { backgroundColor: cardColor }]}>
-            <InfoBox label="STATUS" value={anime.status || anime.publicationStatus || "Unknown"} textColor={textColor} />
-            <InfoBox label="EPISODES" value={anime.episodes ? String(anime.episodes) : "?"} textColor={textColor} />
-            <InfoBox label="YEAR" value={anime.year ? String(anime.year) : "?"} textColor={textColor} />
-            <InfoBox label="STUDIO" value={anime.studio || "Unknown"} textColor={textColor} />
+          {/* GRID INFOS (Année, Studio...) */}
+          <View style={[styles.statsGrid, { backgroundColor: statsGridColor }]}>
+            <InfoBox label="STATUS" value={anime.status || anime.publicationStatus || "Unknown"} textColor={textColor} subTextColor={subTextColor} />
+            <InfoBox label="EPISODES" value={anime.episodes ? String(anime.episodes) : "?"} textColor={textColor} subTextColor={subTextColor} />
+            <InfoBox label="YEAR" value={anime.year ? String(anime.year) : "?"} textColor={textColor} subTextColor={subTextColor} />
+            <InfoBox label="STUDIO" value={anime.studio || "Unknown"} textColor={textColor} subTextColor={subTextColor} />
           </View>
 
-          {/* --- GENRES --- */}
+          {/* GENRES */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: textColor }]}>Genres</Text>
             <View style={styles.genreContainer}>
               {anime.genres && anime.genres.length > 0 ? (
                 anime.genres.map((genreName, index) => (
-                  <GenreChip key={index} label={typeof genreName === 'string' ? genreName : genreName.name} />
+                  <GenreChip 
+                    key={index} 
+                    label={typeof genreName === 'string' ? genreName : genreName.name} 
+                    isDarkMode={isDarkMode} // On passe le mode sombre au chip
+                  />
                 ))
               ) : (
                 <Text style={{ color: "gray" }}>Aucun genre listé</Text>
@@ -193,11 +192,11 @@ export default function AnimeDetailsScreen() {
             </View>
           </View>
 
-          {/* --- SYNOPSIS --- */}
+          {/* SYNOPSIS */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: textColor }]}>Synopsis</Text>
             <Text
-              style={[styles.synopsisText, { color: isDarkMode ? "#CCC" : "#4B5563" }]}
+              style={[styles.synopsisText, { color: isDarkMode ? "#DDD" : "#4B5563" }]}
               numberOfLines={isDescriptionExpanded ? undefined : 4}
             >
               {anime.synopsis || "Aucune description disponible."}
@@ -211,7 +210,7 @@ export default function AnimeDetailsScreen() {
             )}
           </View>
 
-          {/* --- ZONE DE NOTATION --- */}
+          {/* NOTATION */}
           <View style={styles.ratingSection}>
             <Text style={[styles.ratingTitle, { color: textColor }]}>Your Rating</Text>
 
@@ -228,7 +227,9 @@ export default function AnimeDetailsScreen() {
               ))}
             </View>
 
-            <Text style={styles.ratingLabel}>{rating > 0 ? `${rating}/5` : "Not rated yet"}</Text>
+            <Text style={[styles.ratingLabel, { color: subTextColor }]}>
+                {rating > 0 ? `${rating}/5` : "Not rated yet"}
+            </Text>
 
             <TouchableOpacity
               style={[
@@ -249,21 +250,27 @@ export default function AnimeDetailsScreen() {
   );
 }
 
-// --- COMPOSANTS UI HELPERS ---
+// --- PETITS COMPOSANTS ---
 
-const InfoBox = ({ label, value, textColor }) => (
+const InfoBox = ({ label, value, textColor, subTextColor }) => (
   <View style={styles.infoBox}>
-    <Text style={styles.infoLabel}>{label}</Text>
+    <Text style={[styles.infoLabel, { color: subTextColor }]}>{label}</Text>
     <Text style={[styles.infoValue, { color: textColor }]} numberOfLines={1}>
       {value}
     </Text>
   </View>
 );
 
-const GenreChip = ({ label }) => {
-  // Palette de couleurs pour les genres
-  const colors = ["#E0F7FA", "#F3E5F5", "#FFF3E0", "#E8F5E9", "#FFEBEE"];
-  const textColors = ["#006064", "#4A148C", "#E65100", "#1B5E20", "#B71C1C"];
+const GenreChip = ({ label, isDarkMode }) => {
+  // Couleurs adaptées au mode sombre
+  const colors = isDarkMode 
+    ? ["#374151", "#1F2937", "#4B5563", "#334155", "#111827"] 
+    : ["#E0F7FA", "#F3E5F5", "#FFF3E0", "#E8F5E9", "#FFEBEE"];
+    
+  const textColors = isDarkMode
+    ? ["#A5F3FC", "#E9D5FF", "#FFEDD5", "#BBF7D0", "#FECACA"]
+    : ["#006064", "#4A148C", "#E65100", "#1B5E20", "#B71C1C"];
+
   const index = label.length % colors.length;
 
   return (
@@ -278,20 +285,12 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   centerContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   backButtonSimple: { marginTop: 20, padding: 10, backgroundColor: "#6C63FF", borderRadius: 8 },
-  
   headerImage: { width: "100%", height: 350 },
   gradient: { flex: 1, justifyContent: "space-between", padding: 20, paddingTop: 50 },
   headerButtons: { flexDirection: "row", justifyContent: "space-between" },
   iconBtn: { backgroundColor: "rgba(0,0,0,0.3)", padding: 8, borderRadius: 20 },
-
   titleContainer: { marginBottom: 30 },
-  animeTitle: {
-    color: "#FFF",
-    fontSize: 28,
-    fontWeight: "bold",
-    textShadowColor: "rgba(0,0,0,0.7)",
-    textShadowRadius: 10,
-  },
+  animeTitle: { color: "#FFF", fontSize: 28, fontWeight: "bold", textShadowColor: "rgba(0,0,0,0.7)", textShadowRadius: 10 },
   animeSubTitle: { color: "#EEE", fontSize: 16, marginTop: 5, fontWeight: "500" },
 
   contentContainer: {
@@ -306,20 +305,7 @@ const styles = StyleSheet.create({
   globalRating: { flexDirection: "row", alignItems: "center" },
   ratingText: { fontSize: 22, fontWeight: "bold", marginLeft: 8 },
   voteCount: { color: "#9CA3AF", marginLeft: 8, fontWeight: "500" },
-
-  addListBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.primary || "#6C63FF",
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 18,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
+  addListBtn: { flexDirection: "row", alignItems: "center", backgroundColor: "#6C63FF", paddingHorizontal: 18, paddingVertical: 12, borderRadius: 18 },
   addListText: { color: "#FFF", marginLeft: 8, fontWeight: "700" },
 
   statsGrid: {
@@ -331,7 +317,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   infoBox: { width: "48%", marginBottom: 14 },
-  infoLabel: { color: "#9CA3AF", fontWeight: "700", fontSize: 12, marginBottom: 6 },
+  infoLabel: { fontWeight: "700", fontSize: 12, marginBottom: 6 },
   infoValue: { fontWeight: "800", fontSize: 16 },
 
   section: { marginTop: 22 },
@@ -341,12 +327,12 @@ const styles = StyleSheet.create({
   chipText: { fontWeight: "800" },
 
   synopsisText: { fontSize: 15, lineHeight: 22 },
-  readMore: { marginTop: 10, color: COLORS.primary || "#6C63FF", fontWeight: "800" },
+  readMore: { marginTop: 10, color: "#6C63FF", fontWeight: "800" },
 
   ratingSection: { marginTop: 28, alignItems: "center", paddingVertical: 20 },
   ratingTitle: { fontSize: 22, fontWeight: "800", marginBottom: 12 },
   starsContainer: { flexDirection: "row", alignItems: "center", marginTop: 6 },
-  ratingLabel: { marginTop: 10, color: "#6B7280", fontWeight: "700" },
+  ratingLabel: { marginTop: 10, fontWeight: "700" },
   submitBtn: { marginTop: 14, paddingVertical: 14, paddingHorizontal: 18, borderRadius: 14, width: "100%", alignItems: "center" },
   submitBtnText: { color: "#FFF", fontWeight: "800" },
 });

@@ -1,70 +1,131 @@
-import React from "react";
-import { View, Text } from "react-native";
-import { PieChart } from "react-native-gifted-charts";
+import React, { useMemo } from "react";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { BarChart } from "react-native-gifted-charts";
+import { COLORS } from "../constants/styles";
 
-export default function ScoreDistributionChart({ data }) {
-  const buckets = [
-    { label: "8–10", min: 8, max: 10, color: "#4CAF50" },
-    { label: "7–8", min: 7, max: 7.99, color: "#FFC107" },
-    { label: "6–7", min: 6, max: 6.99, color: "#FF7043" },
-    { label: "<6", min: 0, max: 5.99, color: "#E57373" },
-  ];
+const { width } = Dimensions.get("window");
 
-  const chartData = buckets.map((b) => ({
-    value: data.filter(
-      (a) => Number(a.rating) >= b.min && Number(a.rating) <= b.max
-    ).length,
-    color: b.color,
-    text: b.label,
-  }));
+export default function ScoreDistributionChart({ data, theme, isDarkMode }) {
+  
+  // Calcul des données (Mémorisé pour la performance)
+  const chartData = useMemo(() => {
+    // 1. Initialiser les compteurs pour les notes de 1 à 5
+    const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let hasData = false;
+
+    // 2. Parcourir les animés pour compter les notes personnelles
+    if (Array.isArray(data)) {
+      data.forEach((anime) => {
+        // On récupère la note personnelle (ajoutée dans le Context)
+        const score = Number(anime.personalScore);
+
+        // Si la note est valide (entre 1 et 5)
+        if (score >= 1 && score <= 5) {
+          counts[score] += 1;
+          hasData = true;
+        }
+      });
+    }
+
+    // 3. Formater pour le graphique (BarChart)
+    // On crée une barre pour chaque étoile (1★ à 5★)
+    const formattedData = [
+      { label: "1★", value: counts[1], frontColor: "#ef4444" }, // Rouge
+      { label: "2★", value: counts[2], frontColor: "#f97316" }, // Orange
+      { label: "3★", value: counts[3], frontColor: "#eab308" }, // Jaune
+      { label: "4★", value: counts[4], frontColor: "#84cc16" }, // Vert clair
+      { label: "5★", value: counts[5], frontColor: "#22c55e" }, // Vert foncé
+    ];
+
+    // On ajoute un petit label au-dessus de la barre si la valeur > 0
+    return {
+      data: formattedData.map(item => ({
+        ...item,
+        topLabelComponent: () => (
+          item.value > 0 ? (
+            <Text style={{ color: theme.text, fontSize: 10, marginBottom: 4 }}>
+              {item.value}
+            </Text>
+          ) : null
+        )
+      })),
+      hasData
+    };
+  }, [data, theme]);
+
+  // --- RENDU ---
 
   return (
-    <View
-      style={{
-        padding: 15,
-        borderRadius: 12,
-        backgroundColor: "white",
-        marginTop: 20,
-        borderWidth: 1,
-        borderColor: "#ddd",
-      }}
-    >
-      <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>
-        Répartition des notes
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <Text style={[styles.cardTitle, { color: theme.text }]}>
+        Répartition de mes notes
+      </Text>
+      
+      <Text style={[styles.cardSubtitle, { color: theme.subText }]}>
+        Comment je note mes animés (1 à 5 étoiles)
       </Text>
 
-      <PieChart
-        data={chartData}
-        donut
-        radius={100}
-        innerRadius={60}
-        showText
-        textColor="#000"
-        textSize={11}
-        strokeColor="#fff"
-        strokeWidth={2}
-      />
-
-      {/* Légende */}
-      <View style={{ marginTop: 15 }}>
-        {chartData.map((item) => (
-          <View
-            key={item.text}
-            style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}
-          >
-            <View
-              style={{
-                width: 14,
-                height: 14,
-                backgroundColor: item.color,
-                marginRight: 8,
-                borderRadius: 4,
-              }}
-            />
-            <Text style={{ fontSize: 14 }}>{item.text} ({item.value})</Text>
-          </View>
-        ))}
-      </View>
+      {!chartData.hasData ? (
+        <View style={styles.noDataContainer}>
+          <Text style={[styles.noDataText, { color: theme.subText }]}>
+            Aucune note enregistrée pour le moment.
+          </Text>
+          <Text style={{ color: theme.subText, fontSize: 12, marginTop: 5 }}>
+            Allez sur la page d'un animé pour lui donner une note !
+          </Text>
+        </View>
+      ) : (
+        <View style={{ marginTop: 20, alignItems: 'center' }}>
+          <BarChart
+            data={chartData.data}
+            barWidth={35}
+            noOfSections={4}
+            barBorderRadius={4}
+            frontColor={COLORS.primary}
+            yAxisThickness={0}
+            xAxisThickness={1}
+            xAxisColor={theme.border}
+            yAxisTextStyle={{ color: theme.subText, fontSize: 10 }}
+            xAxisLabelTextStyle={{ color: theme.text, fontSize: 12 }}
+            height={180}
+            width={width - 80} // Ajustement largeur
+            isAnimated
+          />
+        </View>
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 15,
+    borderWidth: 1,
+    elevation: 2, // Ombre Android
+    shadowColor: "#000", // Ombre iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  noDataContainer: {
+    padding: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    height: 150,
+  },
+  noDataText: {
+    fontSize: 14,
+    fontStyle: "italic",
+  },
+});
