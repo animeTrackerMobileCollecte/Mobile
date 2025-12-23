@@ -23,8 +23,8 @@ export default function AnimeDetailsScreen() {
   const navigation = useNavigation();
   const route = useRoute();
 
-  const { rateAnime, animeData, addToWishlist, startWatching, markAsCompleted } =
-    useAnime();
+  const { rateAnime } = useAnime();
+    
 
   const { anime } = route.params || {};
 
@@ -42,31 +42,16 @@ export default function AnimeDetailsScreen() {
   const [rating, setRating] = useState(anime.personalScore ? anime.personalScore / 2 : 0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  // Modal "Add to List"
-  const [listModalVisible, setListModalVisible] = useState(false);
+ 
 
-  // On récupère l'anime à jour depuis le contexte (important car le param route peut être "stale")
-  const currentAnime = useMemo(() => {
-    const safe = Array.isArray(animeData) ? animeData : [];
-    return safe.find((a) => String(a?.malId) === String(anime?.malId)) || anime;
-  }, [animeData, anime?.malId]);
+  
 
-  const currentStatus = String(currentAnime?.status || "").toLowerCase();
+  
 
   // Texte bouton selon status
-  const addBtnLabel = useMemo(() => {
-    if (currentStatus === "wishlist") return "In Wishlist";
-    if (currentStatus === "ongoing") return "Watching";
-    if (currentStatus === "completed") return "Completed";
-    return "Add to List";
-  }, [currentStatus]);
+ 
 
-  const addBtnIcon = useMemo(() => {
-    if (currentStatus === "wishlist" || currentStatus === "ongoing" || currentStatus === "completed") {
-      return "checkmark";
-    }
-    return "add";
-  }, [currentStatus]);
+  
 
   // --- LOGIQUE DE NOTATION ---
   const handleStarPress = (starIndex) => {
@@ -79,21 +64,7 @@ export default function AnimeDetailsScreen() {
     }
   };
 
-  // --- ACTIONS LISTE ---
-  const handleAddToWishlist = async () => {
-    setListModalVisible(false);
-    await addToWishlist(anime.malId);
-  };
-
-  const handleStartWatching = async () => {
-    setListModalVisible(false);
-    await startWatching(anime.malId);
-  };
-
-  const handleMarkCompleted = async () => {
-    setListModalVisible(false);
-    await markAsCompleted(anime.malId);
-  };
+  
 
   return (
     <>
@@ -141,14 +112,13 @@ export default function AnimeDetailsScreen() {
               <Text style={styles.voteCount}>(Global)</Text>
             </View>
 
-            {/* ✅ BOUTON ADD TO LIST (maintenant fonctionnel) */}
+            
             <TouchableOpacity
               style={styles.addListBtn}
-              onPress={() => setListModalVisible(true)}
               activeOpacity={0.9}
             >
-              <Ionicons name={addBtnIcon} size={18} color="#FFF" />
-              <Text style={styles.addListText}>{addBtnLabel}</Text>
+              <Ionicons size={18} color="#FFF" />
+              <Text style={styles.addListText}>Add to List</Text>
             </TouchableOpacity>
           </View>
 
@@ -227,47 +197,7 @@ export default function AnimeDetailsScreen() {
         </View>
       </ScrollView>
 
-      {/* ✅ MODAL "ADD TO LIST" */}
-      <Modal
-        visible={listModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setListModalVisible(false)}
-      >
-        <Pressable
-          style={styles.modalBackdrop}
-          onPress={() => setListModalVisible(false)}
-        >
-          <Pressable style={styles.modalCard} onPress={() => {}}>
-            <Text style={styles.modalTitle}>Add to List</Text>
-            <Text style={styles.modalSubtitle}>Choisis où ajouter cet animé</Text>
-
-            <TouchableOpacity style={styles.modalBtn} onPress={handleAddToWishlist}>
-              <Ionicons name="bookmark" size={18} color="#111" />
-              <Text style={styles.modalBtnText}>Wishlist</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.modalBtn} onPress={handleStartWatching}>
-              <Ionicons name="play" size={18} color="#111" />
-              <Text style={styles.modalBtnText}>Watchlist (Ongoing)</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.modalBtn} onPress={handleMarkCompleted}>
-              <Ionicons name="checkmark-done" size={18} color="#111" />
-              <Text style={styles.modalBtnText}>Completed</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.modalBtn, { justifyContent: "center" }]}
-              onPress={() => setListModalVisible(false)}
-            >
-              <Text style={[styles.modalBtnText, { color: "#6C63FF", fontWeight: "700" }]}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-          </Pressable>
-        </Pressable>
-      </Modal>
+     
     </>
   );
 }
